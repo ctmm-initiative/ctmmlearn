@@ -23,7 +23,7 @@ FIT <- ctmm.fit(DATA,GUESS,trace=TRUE)
 #############
 
 # take the first 10 locations
-SUB <- DATA[10:20,]
+SUB <- DATA[1:10,]
 
 # plot subset
 plot(SUB)
@@ -31,14 +31,14 @@ plot(SUB)
 # if working with this amount of data, you might consider alternative ICs
 # in particular IC="LOOCV"
 help("ctmm.select")
-# I'm just subsetting for purposeses of visualization and speed
+# I'm just sub-setting for purposes of visualization and speed
 
 # convenience function
 help("%#%")
 1 %#% 'hr'
 
 # make an array of times over the same period, but 5 min apart
-SEQ <- seq(from=SUB$t[1],to=SUB$t[11],by=5 %#% 'min')
+SEQ <- seq(from=SUB$t[1],to=SUB$t[10],by=5 %#% 'min')
 
 # predict locations at those times
 help('predict.ctmm')
@@ -52,7 +52,7 @@ plot(list(PRED,SUB),col=c('blue','red'))
 #############
 
 # 1 minute sequence
-SEQ <- seq(from=SUB$t[1],to=SUB$t[11],by=1 %#% 'min')
+SEQ <- seq(from=SUB$t[1],to=SUB$t[10],by=1 %#% 'min')
 
 # simulate locations at those time
 help('simulate.ctmm')
@@ -60,6 +60,11 @@ SIM <- simulate(SUB,FIT,t=SEQ)
 
 # plot conditional simulation & data
 plot(list(SIM,SUB),col=c('blue','red'),type=c('l','p'))
+
+
+SIM2 <- simulate(SUB,FIT,t=SEQ)
+# plot conditional simulation & data
+plot(list(SIM,SIM2,SUB),col=c('blue','orange','red'),type=c('l','l','p'))
 
 # that is only trajectory uncertainty
 # can also include parameter uncertainty
@@ -73,7 +78,7 @@ library(ctmm)
 data(buffalo)
 projection(buffalo) <- median(buffalo)
 DATA <- buffalo$Cilla
-load("cilla.rda")
+load("data/cilla.rda")
 
 plot(DATA)
 

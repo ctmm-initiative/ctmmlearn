@@ -74,11 +74,13 @@ for(i in 1:length(buffalo))
   FITS[[i]] <- ctmm.select(buffalo[[i]],GUESS,trace=3)
 }
 names(FITS) <- names(buffalo)
-# save(FITS,file="buffalo.rda")
+# save(FITS,file="data/buffalo.rda")
 load("data/buffalo.rda")
 
 # calculate AKDES on a consistent grid
 AKDES <- akde(buffalo,FITS,weights=TRUE)
+# save(AKDES,file="data/buffalo_akdes.rda")
+load("data/buffalo_akdes.rda")
 
 # color to be spatially distinct
 COL <- color(AKDES,by='individual')
@@ -86,16 +88,23 @@ COL <- color(AKDES,by='individual')
 # plot AKDEs
 plot(AKDES,col.DF=COL,col.level=COL,col.grid=NA,level=NA)
 
+# Mean buffalo HR "the old way"
+AREA <- vector("numeric", length = length(AKDES))
+for(i in 1:length(AKDES)){
+  AREA[i] <- summary(AKDES[[i]])$CI[2]
+}
+mean(AREA)
+
 # meta-analysis of buffalo home-range areas
 meta(AKDES,col=c(COL,'black'),sort=TRUE)
 # model selection: Dirac-delta > inverse-Gaussian
 
-# force inverse-Gaussian plpulation distribution
+# force inverse-Gaussian population distribution
 meta(AKDES,plot=FALSE,IC=NA)
 # since CoV isn't a selected feature, its underestimated here
 
 ###########################
-# Home-range overlap
+# Home-range overlap etc.
 ###########################
 
 help("overlap")
@@ -112,11 +121,38 @@ OVER$CI["Queen","Toni",]
 # point estimates
 OVER$CI[,,"est"]
 
-# metric that takes time into account (paper comming)
-help("proximity")
-
 # where encounters are expected to take place
 help("encounter")
+
+
+#Plot the data and HR estimates
+plot(buffalo[c("Pepper", "Queen")],
+     UD=AKDES[c("Pepper", "Queen")],
+     col = c("blue", "black"),
+     col.DF=COL[4:5],
+     col.grid = NA)
+
+
+#Estimate the home range overlap
+overlap(AKDES[c("Pepper", "Queen")])
+
+
+#Estimate the CDE
+CDE <- encounter(AKDES[c("Pepper", "Queen")])
+
+#Visualise the CDE
+plot(buffalo[c("Pepper", "Queen")],
+     col=COL[4:5],
+     UD=CDE,
+     col.DF="#046C9A",
+     col.grid = NA)
+
+
+# metric that takes time into account (paper coming)
+help("proximity")
+
+proximity(buffalo[c(1,3)],
+          FITS[c(1,3)])
 
 #########################
 # Population density
@@ -131,7 +167,7 @@ MEAN <- mean(AKDES)
 
 plot(buffalo,MEAN,col=COL)
 
-# this is a population kernel density estimate (paper comming)
+# this is a population kernel density estimate (paper coming)
 help("pkde")
 
 PKDE <- pkde(buffalo,AKDES)

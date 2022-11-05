@@ -12,7 +12,7 @@ projection(buffalo) <- median(buffalo)
 DATA <- buffalo[[1]]
 
 # load model fits from ctmm.select
-load("cilla.rda")
+load("data/cilla.rda")
 # first model is the selected model
 FIT <- FITS[[1]]
 
@@ -59,3 +59,29 @@ speed(SUB,FIT.SUB)
 ###########################
 
 help('meta')
+
+#Load in the fitted movement models
+load("data/buffalo.rda")
+
+#Estimate mean spead for each animal
+SPEEDS <- list()
+for(i in 1:length(buffalo))
+{
+  SPEEDS[[i]] <- speed(buffalo[[i]],FITS[[i]])
+}
+names(SPEEDS) <- names(buffalo)
+# save(SPEEDS,file="data/buffalo_speeds.rda")
+load("data/buffalo_speeds.rda")
+
+
+meta(SPEEDS)
+
+
+###########################
+# Instantaneous speeds
+###########################
+
+
+INST_SPEEDS <- speeds(buffalo[[1]],FITS[[1]])
+
+head(INST_SPEEDS)
