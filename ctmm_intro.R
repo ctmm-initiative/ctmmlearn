@@ -23,13 +23,13 @@ browseURL("https://github.com/ctmm-initiative/ctmmlearn")
 # development branch of ctmm (more recent than CRAN)
 remotes::install_github("ctmm-initiative/ctmm")
 # or
-devtools::install_github("ctmm-initiative/ctmm")
+# devtools::install_github("ctmm-initiative/ctmm")
 
 # ctmm point-and-click app - if you know anyone that doesn't user R
-remotes::install_github("ctmm-initiative/ctmmweb")
+# remotes::install_github("ctmm-initiative/ctmmweb")
 # or
-devtools::install_github("ctmm-initiative/ctmmweb")
-ctmmweb::app()
+# devtools::install_github("ctmm-initiative/ctmmweb")
+# ctmmweb::app()
 
 ###################
 # IMPORT AND VISUALIZE
@@ -43,17 +43,21 @@ library(ctmm)
 help("as.telemetry")
 
 # loading data from Movebank CSV (which can be compressed)
-Leo <- as.telemetry('Leo-65545.csv.gz')
+Buffalo <- as.telemetry('data/Kruger African Buffalo, GPS tracking, South Africa.zip')
 # you can also import from a move object, data.frame, etc.
 
 #! load buffalo dataset from ctmm
 data(buffalo)
+help("buffalo")
 
 # this is a list of buffalo telemetry objects
 class(buffalo)
 
 # number of buffalo datasets
 length(buffalo)
+
+class(buffalo[[1]])
+head(buffalo[[1]])
 
 # names of buffalo
 names(buffalo)
@@ -156,7 +160,7 @@ zoom(SVF)
 help("ctmm.guess")
 # variogram will be calculated automatically (with default arguments)
 # this is interactive mode
-ctmm.guess(DATA)
+ctmm.guess(DATA,variogram=SVF)
 # notice how much work I spent automating the units of every plot
 
 # this is noninteractive mode
@@ -213,7 +217,12 @@ summary(FITS[[1]])
 # area here is Gaussian area
 # speed here is Gaussian RMS speed
 
-plot(DATA,FITS[[1]])
+summary(DATA)
+(4.967566 %#% 'months') / (7.505372 %#% 'days')
+help("%#%")
+
+plot(DATA,FITS[[1]]) # anisotropic
+plot(DATA,FITS[[2]]) # isotropic
 
 zoom(SVF,FITS[[1]])
 # not perfect, but much better
@@ -231,6 +240,8 @@ zoom(SVF,FITS$OUF)
 
 # why is this model fit deflected down?
 zoom(SVF,FITS$`OU anisotropic`)
+# you could do better by hand
+ctmm.guess(DATA,variogram=SVF)
 
 ################
 # TEASER
