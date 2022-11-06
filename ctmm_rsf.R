@@ -24,7 +24,7 @@ AKDES <- akde(buffalo,FITS,weights=TRUE)
 # time to mention the benefits of rsf.fit while this is running
 # * available area is estimated - uncertainty is propagated
 # * available points are randomly sampled until numerical convergence
-# * log-likelihood is downweighted to account for autocorrelation and irregular sampling
+# * log-likelihood is down-weighted to account for autocorrelation and irregular sampling
 
 # load environmental data for buffalo
 load("data/buffalo_env.rda")
@@ -41,6 +41,15 @@ plot(buffalo,AKDES,R=ELEV,col.grid=NA,col.level=NA)
 help("rsf.fit")
 # raster covariates mustbe in a named list
 
+# special ingredients in rsf.fit
+# 1.) weighted likelihood to adjust for temporal autocorrelation and sampling irregularity
+i <- 4
+plot(buffalo[[i]]$timestamp,AKDES[[i]]$weights * AKDES[[i]]$DOF.area[1],xlab="time",ylab="weight")
+# 2.) estimate available area (slides)
+# 3.) sample available points until numerical convergence of the Monte-Carlo integral
+TEST <- rsf.fit(buffalo[[i]],AKDES[[i]],R=list(elevation=ELEV))
+# 4.) a better numerical integrator than Monte-Carlo integration (below)
+
 RSF <- list()
 for(i in 1:length(buffalo))
 {
@@ -50,7 +59,7 @@ names(RSF) <- names(buffalo)
 
 # inspect one model fit
 i <- 4
-summary(RSF[[i]]) # slightly significant
+summary(RSF[[i]]) # borderline significant
 # the rest are insignificant
 
 # if you had more individuals and more significance
