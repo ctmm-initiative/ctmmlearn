@@ -1,6 +1,6 @@
 ################
 # Resource Selection Functions
-# (c) Christen Fleming & Björn Reineking
+# © Christen Fleming & Björn Reineking
 # (paper in press at MEE)
 ################
 
@@ -22,9 +22,9 @@ load("data/buffalo-iso.rda")
 
 AKDES <- akde(buffalo,FITS,weights=TRUE)
 # time to mention the benefits of rsf.fit while this is running
-# * available area is estimated - uncertainty is propagated
-# * available points are randomly sampled until numerical convergence
-# * log-likelihood is down-weighted to account for autocorrelation and irregular sampling
+# * log-likelihood is down-weighted to account for autocorrelation and irregular sampling (code below)
+# * available area is estimated - uncertainty is propagated (slides)
+# * available points are randomly sampled until numerical convergence (code below)
 
 # load environmental data for buffalo
 load("data/buffalo_env.rda")
@@ -61,6 +61,16 @@ names(RSF) <- names(buffalo)
 i <- 4
 summary(RSF[[i]]) # borderline significant
 # the rest are insignificant
+
+RSF[[4]]$beta * c(48.75156, 447.6266 )
+exp(RSF[[4]]$beta * c(48.75156, 447.6266 ))
+6.924228e-02/2.251818e-11
+
+IID <- ctmm.fit(buffalo[[i]],ctmm(isotropic=TRUE))
+KDE <- akde(buffalo[[i]],IID)
+RSF.IID <- rsf.fit(buffalo[[i]],KDE,R=list(elevation=ELEV),integrator="Riemann",trace=2)
+
+summary(RSF.IID)
 
 # if you had more individuals and more significance
 help("mean.ctmm")
