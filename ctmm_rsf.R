@@ -1,85 +1,98 @@
 ################
 # Resource Selection Functions
 # © Christen Fleming & Björn Reineking
-# (paper in press at MEE)
+# Alston & Fleming et al., Methods in Ecology and Evolution 4:2 643-654 (2023)
 ################
 
 library(ctmm)
-data(buffalo)
-projection(buffalo) <- median(buffalo)
+data(tapir) # E.P. Medici, Data from: Study "Lowland tapirs, Tapirus terrestris, in Southern Brazil", Movebank Data Repository (2023)
 
+# plot one tapir with treecover raster, to make sure we have appropriate environmental data & projection
+i <- 1
+DATA <- tapir[[i]]
+projection(DATA) <- median(DATA)
+plot(DATA,error=2,R=treecover)
+compass()
+
+# select an autocorrelation model
 # for the moment rsf.fit only uses isotropic models
-# you can feed in an anisotropic model, but it will be refit
-FITS <- list()
-for(i in 1:length(buffalo))
-{
-  GUESS <- ctmm.guess(buffalo[[i]],CTMM=ctmm(isotropic=TRUE),interactive=FALSE)
-  FITS[[i]] <- ctmm.select(buffalo[[i]],GUESS,trace=3)
-}
-names(FITS) <- names(buffalo)
-# save(FITS,file="buffalo-iso.rda")
-load("data/buffalo-iso.rda")
+GUESS <- ctmm.guess(DATA,CTMM=ctmm(error=TRUE,isotropic=TRUE),interactive=FALSE)
+FIT <- ctmm.select(DATA,GUESS,trace=3)
+# save(FITS,file="data/tapir-iso.rda")
+load("data/tapir-iso.rda")
 
-AKDES <- akde(buffalo,FITS,weights=TRUE)
-# time to mention the benefits of rsf.fit while this is running
-# * log-likelihood is down-weighted to account for autocorrelation and irregular sampling (code below)
-# * available area is estimated - uncertainty is propagated (slides)
-# * available points are randomly sampled until numerical convergence (code below)
+# raster covariates must be in a named list
+R <- list(tree=treecover)
 
-# load environmental data for buffalo
-load("data/buffalo_env.rda")
+# AKDE (no RSF)
+AKDE <- akde(DATA,FIT,weights=TRUE)
+plot(DATA,error=2,UD=AKDE,R=treecover,col.grid=NA,main="AKDE")
 
-# environmental variables
-names(buffalo_env)
-
-# pull out elevation data
-ELEV <- raster(buffalo_env,"elev")
-
-# plot to make sure we have appropriate environmental data & projection
-plot(buffalo,AKDES,R=ELEV,col.grid=NA,col.level=NA)
+# fit IID model for comparison
+IID <- ctmm.fit(DATA,CTMM=ctmm(isotropic=TRUE))
+KDE <- akde(DATA,IID)
 
 help("rsf.fit")
-# raster covariates mustbe in a named list
 
-# special ingredients in rsf.fit
-# 1.) weighted likelihood to adjust for temporal autocorrelation and sampling irregularity
-i <- 4
-plot(buffalo[[i]]$timestamp,AKDES[[i]]$weights * AKDES[[i]]$DOF.area[1],xlab="time",ylab="weight")
-# 2.) estimate available area (slides)
-# 3.) sample available points until numerical convergence of the Monte-Carlo integral
-TEST <- rsf.fit(buffalo[[i]],AKDES[[i]],R=list(elevation=ELEV))
-# 4.) a better numerical integrator than Monte-Carlo integration (below)
+# assigned weight without autocorrelation
+plot(DATA$timestamp,mean(KDE$DOF.area) * KDE$weights,xlab='time',ylab="weight")
+# How many points do you need for an IID RSF estimate?
+# iRSF without autocorrelation: iterates until the default 1% error threshold
+RSF.IID <- rsf.fit(DATA,KDE,R=R)
 
-RSF <- list()
-for(i in 1:length(buffalo))
-{
-  RSF[[i]] <- rsf.fit(buffalo[[i]],AKDES[[i]],R=list(elevation=ELEV),integrator="Riemann",trace=2)
-}
-names(RSF) <- names(buffalo)
+# assigned weight with autocorrelation
+plot(DATA$timestamp,mean(AKDE$DOF.area) * AKDE$weights,xlab='time',ylab="weight")
+# How many points do you need for a autocorrelation-weighted RSF estimate?
+# iRSF with autocorrelation: iterates until the default 1% error threshold
+RSF <- rsf.fit(DATA,AKDE,R=R)
+# if you don't have a time-dependent model, integrator="Riemann" is much faster
+RSF <- rsf.fit(DATA,AKDE,R=R,integrator="Riemann")
 
-# inspect one model fit
-i <- 4
-summary(RSF[[i]]) # borderline significant
-# the rest are insignificant
+summary(RSF)
 
-RSF[[4]]$beta * c(48.75156, 447.6266 )
-exp(RSF[[4]]$beta * c(48.75156, 447.6266 ))
-6.924228e-02/2.251818e-11
+# Advantages of rsf.fit()
+# * log-likelihood is down-weighted to account for autocorrelation and irregular sampling
+# * autocorrelation structure can be non-Markovian
+# * available area is estimated - uncertainty is propagated (iRSF)
+# * available points are randomly sampled until numerical convergence
+# Advantages of SSFs
+# * range residence not assumed
+# * can model first-order/Markovian selection
+# * movement kernel is estimated - uncertainty is propagated (iSSA)
 
-IID <- ctmm.fit(buffalo[[i]],ctmm(isotropic=TRUE))
-KDE <- akde(buffalo[[i]],IID)
-RSF.IID <- rsf.fit(buffalo[[i]],KDE,R=list(elevation=ELEV),integrator="Riemann",trace=2)
+## rsf.select() can do model selection on multiple predictors
 
-summary(RSF.IID)
+RSFS <- rsf.select(DATA,AKDE,R=R,formula=~I(sqrt(tree))+tree+I(tree^2),integrator="Riemann",verbose=TRUE,trace=TRUE)
+summary(RSFS)
+
+# selected model
+RSF <- RSFS[[1]]
+summary(RSF)
+
+treecover # 0-1 valued
+# relative selection of tree cover versus no tree cover
+exp( summary(RSF)$CI[1,] * (sqrt(1)-sqrt(0)) )
 
 # if you had more individuals and more significance
 help("mean.ctmm")
 
+# The iRSF distribution that was fit
+help("agde")
+AGDE <- agde(DATA,RSF,R=R)
+# note the finite available area that was estimated
+plot(DATA,AGDE,main='iRSF')
+
 # suitability maps
 help("suitability")
 
-# RSF-informed AKDE
-i <- 1
-RAKDE <- akde(buffalo[[i]],RSF[[i]],R=list(elevation=ELEV),weights=TRUE)
+SUIT <- suitability(DATA,CTMM=RSF,R=R,grid=AKDE)
+names(SUIT) # brick with 3 layers (lower, point estimate, upper)
+plot(DATA,error=2,R=SUIT[['est']],col.grid=NA,main="suitability")
 
-plot(buffalo[[i]],RAKDE)
+# RSF-informed AKDE
+help('akde')
+
+RAKDE <- akde(DATA,RSF,R=R,weights=TRUE)
+plot(DATA,error=2,UD=RAKDE,col.grid=NA,main="iRSF-AKDE")
+
+# you can also add boundaries at the kernel level

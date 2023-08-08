@@ -48,6 +48,8 @@ wAKDE <- akde(DATA,FIT,weights=TRUE)
 # Pepper's optimal weights
 plot(DATA$timestamp,wAKDE$weights)
 
+plot(DATA$timestamp,wAKDE$weights,ylim=c(0,0.005))
+
 # matching extent for plotting
 EXT <- extent(list(KDE,AKDE,wAKDE))
 
@@ -93,7 +95,9 @@ AREA <- vector("numeric", length = length(AKDES))
 for(i in 1:length(AKDES)){
   AREA[i] <- summary(AKDES[[i]])$CI[2]
 }
-mean(AREA)
+AREA
+mean(AREA) # mean
+sqrt(var(AREA)/length(AREA)) # SE
 
 # meta-analysis of buffalo home-range areas
 meta(AKDES,col=c(COL,'black'),sort=TRUE)

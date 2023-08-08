@@ -9,7 +9,7 @@ help(package="ctmm")
 browseVignettes(package="ctmm")
 
 # FAQ
-help("ctmm-FAQ")
+help("ctmm-FAQ",package="ctmm")
 
 # ctmm user group for any questions or help
 browseURL("https://groups.google.com/g/ctmm-user")
@@ -20,10 +20,16 @@ browseURL("https://github.com/ctmm-initiative/ctmm/issues")
 # ctmm learning material - where this script is from
 browseURL("https://github.com/ctmm-initiative/ctmmlearn")
 
+# ctmm manuscripts
+browseURL("https://www.dropbox.com/sh/55ylq4rbm9pl4d9/AAC2WlRCfgQDYrVRpu5pgrfFa?dl=0")
+
 # development branch of ctmm (more recent than CRAN)
 remotes::install_github("ctmm-initiative/ctmm")
 # or
 # devtools::install_github("ctmm-initiative/ctmm")
+
+# what's new in ctmm
+news(package="ctmm")
 
 # ctmm point-and-click app - if you know anyone that doesn't user R
 # remotes::install_github("ctmm-initiative/ctmmweb")
