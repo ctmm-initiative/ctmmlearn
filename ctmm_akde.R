@@ -103,57 +103,6 @@ meta(AKDES,col=c(COL,'black'),sort=TRUE)
 meta(AKDES,plot=FALSE,IC=NA)
 # since CoV isn't a selected feature, its underestimated here
 
-###########################
-# Home-range overlap etc.
-###########################
-
-help("overlap")
-
-OVER <- overlap(AKDES)
-
-# look at everything
-OVER
-
-# pairwise CIs
-OVER$CI["Pepper","Toni",]
-OVER$CI["Queen","Toni",]
-
-# point estimates
-OVER$CI[,,"est"]
-
-# where encounters are expected to take place
-help("encounter")
-
-
-#Plot the data and HR estimates
-plot(buffalo[c("Pepper", "Queen")],
-     UD=AKDES[c("Pepper", "Queen")],
-     col = c("blue", "black"),
-     col.DF=COL[4:5],
-     col.grid = NA)
-
-
-#Estimate the home range overlap
-overlap(AKDES[c("Pepper", "Queen")])
-
-
-#Estimate the CDE
-CDE <- encounter(AKDES[c("Pepper", "Queen")])
-
-#Visualise the CDE
-plot(buffalo[c("Pepper", "Queen")],
-     col=COL[4:5],
-     UD=CDE,
-     col.DF="#046C9A",
-     col.grid = NA)
-
-
-# metric that takes time into account (paper coming)
-help("proximity")
-
-proximity(buffalo[c(1,3)],
-          FITS[c(1,3)])
-
 #########################
 # Population density
 #########################
