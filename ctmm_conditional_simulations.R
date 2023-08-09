@@ -123,6 +123,8 @@ tau_v <- 1 %#% 'min'
 
 
 #Spatial variance
+# Note: note the same as the 95% HR area
+# 95% HR area = -2*log(0.05)*pi*sig
 sig <- 1 %#% 'kilometers^2'
 
 
