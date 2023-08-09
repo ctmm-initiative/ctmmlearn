@@ -28,7 +28,8 @@ plot(vg, GUESS)
 #Fit the models
 FIT <- ctmm.select(coati[[1]],
                    GUESS,
-                   cores = -1)
+                   cores = -1,
+                   trace = 3)
 
 
 #Summary of the fit
@@ -97,8 +98,6 @@ plot(MLP,
 
 
 #Export the simulations to work with other packages
-library(rgdal)
-
 SIM_EXPORT <- simulate(coati[[1]],
                        CTMM = FIT,
                        complete = TRUE)
