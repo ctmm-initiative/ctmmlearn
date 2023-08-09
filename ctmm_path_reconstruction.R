@@ -9,7 +9,7 @@ names(buffalo)
 DATA <- buffalo$Cilla
 
 # calculate guesstimate
-GUESS <- ctmm.guess(DATA)
+ctmm.guess(DATA)
 GUESS <- ctmm.guess(DATA,interactive=FALSE)
 
 # select model
@@ -70,6 +70,10 @@ plot(list(SIM,SIM2,SUB),col=c('blue','orange','red'),type=c('l','l','p'))
 # can also include parameter uncertainty
 help('emulate')
 
+SIM3 <- simulate(SUB,emulate(FIT, fast = T),t=SEQ)
+
+plot(list(SIM,SIM2,SIM3,SUB),col=c('blue','orange','black','red'),type=c('l','l','l','p'))
+
 ##########################
 # Occurrence distributions
 ##########################
@@ -87,5 +91,8 @@ plot(OD,col.level=NA)
 
 SIM <- simulate(DATA,FITS[[1]],dt=5 %#% 'min')
 plot(SIM)
+
+# If you have habitat values and want to know how much
+# time an animal spent you can calculate the weighted average:
 
 # sum(RASTER*OD) = E[RASTER]
