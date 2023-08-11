@@ -5,7 +5,7 @@
 ################
 
 library(ctmm)
-data(tapir)
+load("data/tapir.rda")
 # E.P. Medici, Data from: Study "Lowland tapirs, Tapirus terrestris, in Southern Brazil", Movebank Data Repository (2023)
 # tree cover data from the Hansen forest map based on Landsat 7
 
