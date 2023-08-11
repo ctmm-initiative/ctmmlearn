@@ -25,16 +25,12 @@ browseURL("https://www.dropbox.com/sh/55ylq4rbm9pl4d9/AAC2WlRCfgQDYrVRpu5pgrfFa?
 
 # development branch of ctmm (more recent than CRAN)
 remotes::install_github("ctmm-initiative/ctmm")
-# or
-# devtools::install_github("ctmm-initiative/ctmm")
 
 # what's new in ctmm
 news(package="ctmm")
 
 # ctmm point-and-click app - if you know anyone that doesn't user R
 # remotes::install_github("ctmm-initiative/ctmmweb")
-# or
-# devtools::install_github("ctmm-initiative/ctmmweb")
 # ctmmweb::app()
 
 ###################
@@ -78,16 +74,16 @@ summary(buffalo)
 help("plot.telemetry")
 
 # plot all buffalo
-plot(buffalo)
+plot(buffalo,main="6 African buffalo")
 # but all the same color
 
 # plot buffalo with list-sorted rainbow of colors
 COL <- rainbow(length(buffalo))
-plot(buffalo,col=COL)
+plot(buffalo,col=COL,main="Rainbow colors")
 
 # plot buffalo with spatially-separated rainbow of colors
 COL <- color(buffalo,by='individual')
-plot(buffalo,col=COL)
+plot(buffalo,col=COL,main="Spatial color separation")
 
 # many other built in coloring options for telemetry objects
 help("color")
@@ -103,6 +99,9 @@ projection(buffalo)
 # You want a projection that is locally flat over your data (to minimize distortion).
 # By default, as.telemetry() will choose a two-point equidistant projection, which is
 # safer for migratory species, but does not preserve North=up.
+# The algorithm can be found in:
+ctmm:::median.longlat
+# and automates the estimation of k=2 geometric median (robust) clusters
 
 # show north on plot
 compass()
@@ -113,7 +112,7 @@ projection(buffalo) <- median(buffalo)
 projection(buffalo)
 
 # now North=up, which is fine for this dataset
-plot(buffalo,col=COL)
+plot(buffalo,col=COL,main="Azimuthal-equidistant projection")
 compass()
 
 ###################
@@ -127,7 +126,7 @@ names(buffalo)
 DATA <- buffalo$Cilla
 
 # plot telemetry object
-plot(DATA)
+plot(DATA,main="Cilla")
 
 # color by time
 COL <- color(DATA,by='time')
@@ -136,8 +135,8 @@ plot(DATA,col=COL)
 
 #! calculate a variogram object (named SVF) from the telemetry object
 SVF <- variogram(DATA)
-plot(SVF)
-# on average how far apart (in distance^2) given a time lag between
+plot(SVF,main="Variogram")
+# on average how far apart (in distance^2) given a time lag between any two points
 
 # help file for variogram
 help("variogram")
@@ -151,7 +150,7 @@ SVF <- variogram(DATA,CI="Gauss")
 
 # frequently you want to zoom in to the beginning of the variogram
 # plot with zoom slider
-zoom(SVF)
+zoom(SVF,main="Variogram with good CIs")
 # things to look for
 # * the asymptote (if any)
 # * how long does it take to asymptote
@@ -198,23 +197,23 @@ summary(FITS)
 summary(FITS$`IID anisotropic`)
 
 # compare mean and covariance to data
-plot(DATA,FITS$`IID anisotropic`)
+plot(DATA,FITS$`IID anisotropic`,main="IID Gaussian Distribution")
 
 # compare empirical variogram to that of model
-zoom(SVF,FITS$`IID anisotropic`)
+zoom(SVF,FITS$`IID anisotropic`,main="IID Variogram")
 
 # calculate residuals
 RES <- residuals(DATA,FITS$`IID anisotropic`)
 
 # scatter plot of residuals
-plot(RES)
+plot(RES,main="IID Residuals")
 
 # calculate correlogram of residuals
 ACF <- correlogram(RES,res=10)
 # res=10 is for drifting sampling rate
 # alternatively, fast=FALSE
 
-zoom(ACF)
+zoom(ACF,main='ACF of "IID" Residuals')
 
 # The first model is the selected model
 summary(FITS)
@@ -227,10 +226,10 @@ summary(DATA)
 (4.967566 %#% 'months') / (7.505372 %#% 'days')
 help("%#%")
 
-plot(DATA,FITS[[1]]) # anisotropic
-plot(DATA,FITS[[2]]) # isotropic
+plot(DATA,FITS[[1]],main="Anisotropic Gaussian") # anisotropic
+plot(DATA,FITS[[2]],main="Isotropic Gaussian") # isotropic
 
-zoom(SVF,FITS[[1]])
+zoom(SVF,FITS[[1]],main="OUF Variogram")
 # not perfect, but much better
 
 # residuals
@@ -239,13 +238,10 @@ RES2 <- residuals(DATA,FITS[[1]])
 # residual ACF
 ACF2 <- correlogram(RES2,res=10)
 
-zoom(ACF2)
-
-# looking at the other models
-zoom(SVF,FITS$OUF)
+zoom(ACF2,main='ACF of "OUF" Residuals')
 
 # why is this model fit deflected down?
-zoom(SVF,FITS$`OU anisotropic`)
+zoom(SVF,FITS$`OU anisotropic`,main='ACF of "OU" Residuals')
 # you could do better by hand
 ctmm.guess(DATA,variogram=SVF)
 
@@ -257,7 +253,8 @@ ctmm.guess(DATA,variogram=SVF)
 SIM <- simulate(FITS[[1]],t=DATA$t)
 
 # plot data
-plot(SIM)
+plot(SIM,main="Cilla Simulacrum")
 # what areas does this individual like/dislike?
 
+# SPOILER
 plot(SIM,FITS[[1]],level=NA)

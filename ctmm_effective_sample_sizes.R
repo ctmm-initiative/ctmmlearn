@@ -20,9 +20,11 @@ load("data/gazelle.rda")
 
 # summarize data
 summary(DATA)
+# note the sampling period
 
 # summarize model
 summary(FIT)
+# note the effective sample sizes
 
 # SI units converter
 help("%#%")
@@ -38,9 +40,9 @@ summary(FIT)$DOF
 help("ctmm.fit")
 # note the methods argument
 
-##########################
-# For a target bias of 5%
-# ctmm.fit method="ML" requires DOF[area]>=20  (CONVENTIONAL)
+############################
+# For a target bias of O(5%)
+# ctmm.fit method="ML" requires DOF[area]>=20       (CONVENTIONAL)
 # ctmm.fit method="pHREML" requires DOF[area]>=4-5  (DEFAULT)
 # ctmm.boot method="pHREML" requires DOF[area]>=2-3 (SLOW)
 # but in all cases DOF[area] is an estimate

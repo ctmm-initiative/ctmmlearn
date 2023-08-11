@@ -5,20 +5,21 @@
 ################
 
 library(ctmm)
-data(tapir) # E.P. Medici, Data from: Study "Lowland tapirs, Tapirus terrestris, in Southern Brazil", Movebank Data Repository (2023)
+data(tapir)
+# E.P. Medici, Data from: Study "Lowland tapirs, Tapirus terrestris, in Southern Brazil", Movebank Data Repository (2023)
+# tree cover data from the Hansen forest map based on Landsat 7
 
 # plot one tapir with treecover raster, to make sure we have appropriate environmental data & projection
 i <- 1
 DATA <- tapir[[i]]
 projection(DATA) <- median(DATA)
-plot(DATA,error=2,R=treecover)
-compass()
+plot(DATA,error=2,R=treecover,main="Lowland tapir under tree cover")
 
 # select an autocorrelation model
 # for the moment rsf.fit only uses isotropic models
 GUESS <- ctmm.guess(DATA,CTMM=ctmm(error=TRUE,isotropic=TRUE),interactive=FALSE)
 FIT <- ctmm.select(DATA,GUESS,trace=3)
-# save(FITS,file="data/tapir-iso.rda")
+# save(FIT,file="data/tapir-iso.rda")
 load("data/tapir-iso.rda")
 
 # raster covariates must be in a named list
@@ -50,18 +51,12 @@ RSF <- rsf.fit(DATA,AKDE,R=R,integrator="Riemann")
 
 summary(RSF)
 
-# Advantages of rsf.fit()
+# Advantages of rsf.fit() iRSFs over regular RSFs
 # * log-likelihood is down-weighted to account for autocorrelation and irregular sampling
-# * autocorrelation structure can be non-Markovian
-# * available area is estimated - uncertainty is propagated (iRSF)
 # * available points are randomly sampled until numerical convergence
-# Advantages of SSFs
-# * range residence not assumed
-# * can model first-order/Markovian selection
-# * movement kernel is estimated - uncertainty is propagated (iSSA)
+# * available area is estimated - uncertainty is propagated (iRSF)
 
 ## rsf.select() can do model selection on multiple predictors
-
 RSFS <- rsf.select(DATA,AKDE,R=R,formula=~I(sqrt(tree))+tree+I(tree^2),integrator="Riemann",verbose=TRUE,trace=TRUE)
 summary(RSFS)
 
@@ -73,7 +68,7 @@ treecover # 0-1 valued
 # relative selection of tree cover versus no tree cover
 exp( summary(RSF)$CI[1,] * (sqrt(1)-sqrt(0)) )
 
-# if you had more individuals and more significance
+# if you had more individuals and more significance (and transferable models)
 help("mean.ctmm")
 
 # The iRSF distribution that was fit

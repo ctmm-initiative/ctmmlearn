@@ -15,7 +15,7 @@ names(buffalo)
 DATA <- buffalo$Pepper
 
 COL <- color(DATA,by="time")
-plot(DATA,col=COL)
+plot(DATA,col=COL,main="Pepper")
 
 # this dataset has problems
 dt.plot(DATA)
@@ -46,21 +46,21 @@ wAKDE <- akde(DATA,FIT,weights=TRUE)
 # unweighted AKDE places too much density on oversampled times
 
 # Pepper's optimal weights
-plot(DATA$timestamp,wAKDE$weights)
+plot(DATA$timestamp,wAKDE$weights,xlab="time",ylab="weight",main="Optimal Weights")
 
-plot(DATA$timestamp,wAKDE$weights,ylim=c(0,0.005))
+plot(DATA$timestamp,wAKDE$weights,xlab="time",ylab="weight",main="Optimal Weights",ylim=c(0,0.005))
 
 # matching extent for plotting
 EXT <- extent(list(KDE,AKDE,wAKDE))
 
-plot(DATA,KDE,ext=EXT)
+plot(DATA,KDE,ext=EXT,main="KDE")
 # note CIs, grid, etc...
 summary(KDE)
 
-plot(DATA,AKDE,ext=EXT)
+plot(DATA,AKDE,ext=EXT,main="AKDE")
 summary(AKDE)
 
-plot(DATA,wAKDE,ext=EXT)
+plot(DATA,wAKDE,ext=EXT,main="optimally weighted AKDE")
 summary(wAKDE)
 
 ###########################
@@ -88,13 +88,12 @@ load("data/buffalo_akdes.rda")
 COL <- color(AKDES,by='individual')
 
 # plot AKDEs
-plot(AKDES,col.DF=COL,col.level=COL,col.grid=NA,level=NA)
+plot(AKDES,col.DF=COL,col.level=COL,col.grid=NA,level=NA,main="African buffalo AKDEs")
 
 # Mean buffalo HR "the old way"
 AREA <- vector("numeric", length = length(AKDES))
-for(i in 1:length(AKDES)){
-  AREA[i] <- summary(AKDES[[i]])$CI[2]
-}
+for(i in 1:length(AKDES))
+{ AREA[i] <- summary(AKDES[[i]])$CI[2] }
 AREA
 mean(AREA) # mean
 sqrt(var(AREA)/length(AREA)) # SE
@@ -115,14 +114,14 @@ meta(AKDES,plot=FALSE,IC=NA)
 help("mean.UD")
 # note the 'sample' argument for correct CIs
 
-# straight mean
-MEAN <- mean(AKDES)
+# straight mean - for a population of 6 buffalo
+MEAN <- mean(AKDES,sample=FALSE)
 
-plot(buffalo,MEAN,col=COL)
+plot(buffalo,MEAN,col=COL,main="Mean African buffalo AKDE")
 
 # this is a population kernel density estimate (paper coming)
 help("pkde")
 
 PKDE <- pkde(buffalo,AKDES)
 
-plot(buffalo,PKDE,col=COL)
+plot(buffalo,PKDE,col=COL,main="African buffalo PKDE")
