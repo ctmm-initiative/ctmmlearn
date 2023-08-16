@@ -98,6 +98,8 @@ AREA
 mean(AREA) # mean
 sqrt(var(AREA)/length(AREA)) # SE
 
+help('meta')
+
 # meta-analysis of buffalo home-range areas
 meta(AKDES,col=c(COL,'black'),sort=TRUE)
 # model selection: Dirac-delta > inverse-Gaussian

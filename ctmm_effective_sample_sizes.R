@@ -10,6 +10,9 @@ data(gazelle)
 # select 18th gazelle
 DATA <- gazelle[[18]]
 
+COL <- color(DATA,by='time')
+plot(DATA,col=COL)
+
 # guestimate model parameters
 GUESS <- ctmm.guess(DATA,interactive=FALSE)
 

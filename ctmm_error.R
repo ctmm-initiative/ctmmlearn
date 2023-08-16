@@ -55,6 +55,10 @@ summary(UERE)
 # apply error model to data
 uere(turtle) <- UERE
 
+head(turtle$F231)
+
+plot(turtle$F231)
+
 ## If we aren't sure about the error data:
 ## QUESTION 1: Are the HDOP and location class values informative?
 data(turtle)
@@ -156,6 +160,8 @@ DATA <- turtle$F231
 # plot data
 plot(DATA)
 
+help('outlie')
+
 # look for outliers
 OUT <- outlie(DATA)
 
@@ -198,6 +204,18 @@ summary(FITS[[1]])
 
 # compare to
 summary(uere(DATA))
+
+## Smoothing data for other packages (not ctmm)
+
+help('predict')
+
+SMOOTH <- predict(DATA,FITS[[1]])
+
+plot(DATA)
+plot(SMOOTH)
+
+SIM <- simulate(DATA,FITS[[1]])
+plot(SIM)
 
 ## IF YOU DIDN'T HAVE CALIBRATION DATA, SUPPLY A PRIOR
 

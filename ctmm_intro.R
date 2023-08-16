@@ -235,6 +235,8 @@ zoom(SVF,FITS[[1]],main="OUF Variogram")
 # residuals
 RES2 <- residuals(DATA,FITS[[1]])
 
+plot(RES2,main="OUF Residuals")
+
 # residual ACF
 ACF2 <- correlogram(RES2,res=10)
 
