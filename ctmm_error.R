@@ -207,7 +207,7 @@ summary(uere(DATA))
 
 ## Smoothing data for other packages (not ctmm)
 
-help('predict')
+help('predict',package="ctmm")
 
 SMOOTH <- predict(DATA,FITS[[1]])
 

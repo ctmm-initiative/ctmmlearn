@@ -53,6 +53,6 @@ help("ctmm.fit")
 help("ctmm.boot")
 
 # this will take a while
-BOOT <- ctmm.boot(DATA,FIT,iterate=TRUE,cores=-1)
+BOOT <- ctmm.boot(DATA,FIT,cores=-1)
 
 # discuss daily, weekly, monthly, seasonsal home-range estimates

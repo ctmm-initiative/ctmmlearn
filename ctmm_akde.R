@@ -88,7 +88,7 @@ load("data/buffalo_akdes.rda")
 COL <- color(AKDES,by='individual')
 
 # plot AKDEs
-plot(AKDES,col.DF=COL,col.level=COL,col.grid=NA,level=NA,main="African buffalo AKDEs")
+plot(AKDES,col.UD=COL,col.level=COL,col.grid=NA,level=NA,main="African buffalo AKDEs")
 
 # Mean buffalo HR "the old way"
 AREA <- vector("numeric", length = length(AKDES))
@@ -98,7 +98,8 @@ AREA
 mean(AREA) # mean
 sqrt(var(AREA)/length(AREA)) # SE
 
-help('meta')
+
+help('meta',package="ctmm")
 
 # meta-analysis of buffalo home-range areas
 meta(AKDES,col=c(COL,'black'),sort=TRUE)
@@ -121,7 +122,7 @@ MEAN <- mean(AKDES,sample=FALSE)
 
 plot(buffalo,MEAN,col=COL,main="Mean African buffalo AKDE")
 
-# this is a population kernel density estimate (paper coming)
+# this is a population kernel density estimate (talk on Wednesday & paper coming)
 help("pkde")
 
 PKDE <- pkde(buffalo,AKDES)
