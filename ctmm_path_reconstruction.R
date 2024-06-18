@@ -3,20 +3,19 @@ library(ctmm)
 
 # load buffalo data from package
 data(buffalo)
+projection(buffalo) <- median(buffalo)
+
 names(buffalo)
 
 # look at Cilla
 DATA <- buffalo$Cilla
 
-# calculate guesstimate
-ctmm.guess(DATA)
+# selected autocorrelation model
 GUESS <- ctmm.guess(DATA,interactive=FALSE)
-
-# select model
-FIT <- ctmm.select(DATA,GUESS)
-# You will want to use ctmm.select here
-# I am cheating, as I know the selected model!
-FIT <- ctmm.fit(DATA,GUESS,trace=TRUE)
+FIT <- ctmm.select(DATA,GUESS,trace=3)
+# save(FIT,file="cilla.rda")
+# I've already run this
+load("data/cilla.rda")
 
 #############
 # PREDICT
@@ -78,21 +77,18 @@ plot(list(SIM,SIM2,SIM3,SUB),col=c('blue','orange','black','red'),type=c('l','l'
 # Occurrence distributions
 ##########################
 
-library(ctmm)
-data(buffalo)
-projection(buffalo) <- median(buffalo)
-DATA <- buffalo$Cilla
-load("data/cilla.rda")
-
+# full dataset
 plot(DATA)
 
-OD <- occurrence(DATA,FITS[[1]])
+OD <- occurrence(DATA,FIT)
 plot(OD,col.level=NA)
 
-SIM <- simulate(DATA,FITS[[1]],dt=5 %#% 'min')
+SIM <- simulate(DATA,FIT,dt=5 %#% 'min')
 plot(SIM)
 
 # If you have habitat values and want to know how much
 # time an animal spent you can calculate the weighted average:
 
 # sum(RASTER*OD) = E[RASTER]
+# where OD is the exported 'PMF'
+help('export')

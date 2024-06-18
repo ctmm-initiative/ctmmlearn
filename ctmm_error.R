@@ -1,5 +1,6 @@
 #############
 # TELEMETRY ERROR MODELING
+# cite manuscript: ...
 #############
 
 #############
@@ -43,7 +44,7 @@ head(turtle[[1]])
 
 ## Assuming all of the information is good
 
-?uere.fit
+help("uere.fit")
 
 # fit error parameters to calibration data
 UERE <- uere.fit(turtle[1:2])

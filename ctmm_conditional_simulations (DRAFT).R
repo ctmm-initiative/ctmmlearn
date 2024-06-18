@@ -1,11 +1,9 @@
-
-#Load the pre-requsite package
-library(ctmm)
-
-
 #############################################################
 ####    Simulations conditioned off of a fitted model    ####
 #############################################################
+
+#Load the prerequsite package
+library(ctmm)
 
 #Load in the dataset from ctmm
 data("coati")
@@ -22,7 +20,7 @@ GUESS <- variogram.fit(vg,
                        interactive = FALSE)
 
 #Visually inspect the fit
-plot(vg, GUESS)
+plot(vg,GUESS)
 
 
 #Fit the models

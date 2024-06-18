@@ -73,6 +73,7 @@ help("mean.ctmm")
 
 # The iRSF distribution that was fit
 help("agde")
+
 AGDE <- agde(DATA,RSF,R=R)
 # note the finite available area that was estimated
 plot(DATA,AGDE,main='iRSF')

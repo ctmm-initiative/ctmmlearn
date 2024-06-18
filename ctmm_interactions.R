@@ -31,7 +31,7 @@ OVER <- overlap(AKDES)
 overlap(list(akde(buffalo$Pepper, FITS$Pepper),
              akde(buffalo$Queen, FITS$Pepper)))
 
-# But this works because HRs are estimated simultaneously
+# But this works because HRs are estimated simultaneously (and consistently)
 overlap(akde(list(buffalo$Pepper,buffalo$Queen),
              list(FITS$Pepper, FITS$Queen)))
 
@@ -54,7 +54,7 @@ OVER$CI[,,"est"]
 # where encounters are expected to take place
 
 # Relevant paper: https://doi.org/10.1111/2041-210X.13597
-help("encounter")
+help("cde")
 
 
 #Plot the data and HR estimates
@@ -70,7 +70,7 @@ overlap(AKDES[c("Pepper", "Queen")])
 
 
 #Estimate the CDE
-CDE <- encounter(AKDES[c("Pepper", "Queen")])
+CDE <- cde(AKDES[c("Pepper", "Queen")])
 
 #Visualise the CDE
 plot(buffalo[c("Pepper", "Queen")],
@@ -141,19 +141,19 @@ plot(sim_dists$est ~ sim_dists$timestamp,
 PROXIMITY <- proximity(buffalo[c("Cilla","Mvubu")],
                        FITS[c("Cilla","Mvubu")])
 load("data/buffalo_proximity.rda")
-
+PROXIMITY
 
 # Proximity ratio for simulated animals
 SIM_PROXIMITY <- proximity(list(cilla_sim, mvubu_sim),
                            FITS[c("Cilla","Mvubu")])
 load("data/simulated_proximity.rda")
-
+SIM_PROXIMITY
 
 #-----------------------------------------------------
 # Encounters
 #-----------------------------------------------------
 
-help("rates")
+help("encounter")
 # Relevant paper: https://doi.org/10.1101/2023.06.07.544097
 
 #Empirical encounters
@@ -186,6 +186,6 @@ plot(N ~ enc_rad,
 
 
 #Estimate relative encounter rates
-RATES <- rates(AKDES)
-
-
+RATES <- encounter(AKDES)
+RATES$CI["Cilla","Mvubu",] * 100^2 # good for small distances
+tanh(sqrt(RATES$CI["Cilla","Mvubu",])*100)^2 # more reliable

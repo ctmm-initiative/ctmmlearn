@@ -1,5 +1,6 @@
 #############################
 # Speed, distance, diffusion
+# https://movementecologyjournal.biomedcentral.com/articles/10.1186/s40462-019-0177-1
 #############################
 
 #! load buffalo dataset from ctmm
@@ -13,8 +14,6 @@ DATA <- buffalo[[1]]
 
 # load model fits from ctmm.select
 load("data/cilla.rda")
-# first model is the selected model
-FIT <- FITS[[1]]
 
 # units operator
 ?`%#%`
@@ -47,12 +46,12 @@ FIT.SUB <- ctmm.select(SUB,FIT.SUB,trace=3)
 # the speed estimate here is RMS Gaussian
 summary(FIT.SUB)
 # Gaussian (regular speed - not RMS)
-# speed(FIT.SUB)
+speed(FIT.SUB)
 # non-parametric speed estimation
 speed(SUB,FIT.SUB)
 
 # keep in mind the stationary assumption of the model
-
+# see the appendix of Noonan et al.
 
 ###########################
 # Population meta-analysis

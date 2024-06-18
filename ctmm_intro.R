@@ -100,7 +100,7 @@ projection(buffalo)
 # By default, as.telemetry() will choose a two-point equidistant projection, which is
 # safer for migratory species, but does not preserve North=up.
 # The algorithm can be found in:
-ctmm:::median.longlat
+ctmm:::median_longlat
 # and automates the estimation of k=2 geometric median (robust) clusters
 
 # show north on plot
@@ -242,10 +242,10 @@ ACF2 <- correlogram(RES2,res=10)
 
 zoom(ACF2,main='ACF of "OUF" Residuals')
 
+# you can do well by hand
+ctmm.guess(DATA,variogram=SVF)
 # why is this model fit deflected down?
 zoom(SVF,FITS$`OU anisotropic`,main='ACF of "OU" Residuals')
-# you could do better by hand
-ctmm.guess(DATA,variogram=SVF)
 
 ################
 # TEASER

@@ -1,6 +1,6 @@
 ###########
 # RANGE VERSUS OCCURRENCE DISTRIBUTIONS
-# (paper coming)
+# https://doi.org/10.1101/2022.09.29.509951
 ###########
 
 library(ctmm)
@@ -9,6 +9,7 @@ projection(buffalo) <- median(buffalo)
 DATA <- buffalo$Cilla
 load("data/cilla.rda")
 
+FITS <- list("OUF anisotropic"=FIT)
 # include Brownian motion models
 FITS[["BM"]] <- ctmm.fit(DATA,ctmm(tau=Inf,isotropic=TRUE))
 # this one is not as commonly used, but let's throw it in
@@ -58,7 +59,9 @@ title("BM Krige (BB)")
 # Impact of coarsening the data
 SUB <- DATA
 
+#########################
 # remove every other time
+#########################
 SUB <- SUB[as.logical(1:nrow(SUB)%%2),]
 par(mfrow=c(1,2))
 RD <- akde(SUB,FITS[[1]])
@@ -67,7 +70,9 @@ plot(RD,col.level=NA,col.grid=NA,ext=EXT)
 title("Range distribution")
 plot(OD,col.level=NA,ext=EXT)
 title("Occurrence distribution")
+#########################
 
+# repeat the above until they look similar
 # how much data when they look similar?
 nrow(DATA)
 nrow(SUB)
@@ -75,7 +80,9 @@ nrow(SUB)
 # Impact of truncating the data
 SUB <- DATA
 
+####################################
 # remove the second half of the data
+####################################
 SUB <- SUB[1:round(nrow(SUB)/2),]
 par(mfrow=c(1,2))
 RD <- akde(SUB,FITS[[1]])
@@ -84,8 +91,11 @@ plot(RD,col.level=NA,col.grid=NA,ext=EXT)
 title("Range distribution")
 plot(OD,col.level=NA,ext=EXT)
 title("Occurrence distribution")
+####################################
 
+# repeat the above
 par(mfrow=c(1,1))
+
 # range area = predicted space use, given the same behaviors (biological)
 # occurrence area = uncertainty (sampling dependent and limited to the sampling period)
-# neither estimate space use during the sampling period!!!
+# neither estimate the amount of space used during the sampling period!!!

@@ -2,6 +2,8 @@
 # AKDE
 ##########
 
+library(ctmm)
+
 help("akde")
 help("bandwidth")
 
@@ -109,6 +111,10 @@ meta(AKDES,col=c(COL,'black'),sort=TRUE)
 meta(AKDES,plot=FALSE,IC=NA)
 # since CoV isn't a selected feature, its underestimated here
 
+# comparing sub-groups
+BUFFALO <- list(South=AKDES[1:3],North=AKDES[4:6])
+meta(BUFFALO)
+
 #########################
 # Population density
 #########################
@@ -122,7 +128,7 @@ MEAN <- mean(AKDES,sample=FALSE)
 
 plot(buffalo,MEAN,col=COL,main="Mean African buffalo AKDE")
 
-# this is a population kernel density estimate (talk on Wednesday & paper coming)
+# this is a population kernel density estimate (paper coming)
 help("pkde")
 
 PKDE <- pkde(buffalo,AKDES)
