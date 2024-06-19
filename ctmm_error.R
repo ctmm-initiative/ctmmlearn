@@ -1,6 +1,6 @@
 #############
 # TELEMETRY ERROR MODELING
-# cite manuscript: ...
+# https://www.biorxiv.org/content/10.1101/2020.06.12.130195v2.full
 #############
 
 #############
