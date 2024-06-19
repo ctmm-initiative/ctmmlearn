@@ -178,8 +178,8 @@ help("ctmm.select")
 FITS <- ctmm.select(DATA,GUESS,trace=3,verbose=TRUE,cores=-1)
 # candidate models: OUF, OUf, OUΩ, IOU, BM, IID, inactive
 # I've already run this code for you
-# save(FITS,file="cilla.rda")
-load("data/cilla.rda")
+# save(FITS,file="cillas.rda")
+load("data/cillas.rda")
 
 # lets look at the results
 summary(FITS)
