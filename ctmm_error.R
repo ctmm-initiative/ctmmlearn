@@ -171,7 +171,7 @@ plot(OUT)
 head(OUT)
 
 # good location estimates
-GOOD <- OUT$speed < 0.05 # biological threshold
+GOOD <- OUT$speed < 0.05 # biological threshold for this species (wood turtle)
 
 # take only good location estimates
 DATA <- DATA[GOOD,]
@@ -203,8 +203,16 @@ summary(FITS)
 # look at best model
 summary(FITS[[1]])
 
-# compare to
+# compare to prior model
 summary(uere(DATA))
+
+# compare to movement model without error model
+GUESS <- FITS[[1]]
+GUESS$error <- FALSE
+FIT.NE <- ctmm.fit(DATA,GUESS,trace=2)
+
+summary(FITS[[1]])$CI
+summary(FIT.NE)$CI
 
 ## Smoothing data for other packages (not ctmm)
 

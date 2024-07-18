@@ -37,7 +37,7 @@ plot(OUT)
 # deviation from the geometric median
 # other axes can be plotted if available
 
-# biological decision to reject all speeds > 5 cm/s
+# biological decision to reject all speeds > 5 cm/s for this species (wood turtle)
 MAX <- 5 %#% 'cm/s'
 ?'%#%' # convenient units function
 MAX # 5 cm/s in SI units

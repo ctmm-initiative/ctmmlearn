@@ -10,10 +10,10 @@
 # These analyses are conditional on fitted movement models and HR estimates
 # (see: https://github.com/ctmm-initiative/ctmmlearn/blob/main/ctmm_akde.R)
 library(ctmm)
-data("buffalo"); projection(buffalo) <- median(buffalo)
+data("buffalo")
+projection(buffalo) <- median(buffalo)
 load("data/buffalo.rda") # Fitted movement models; object called 'FITS'
 load("data/buffalo_akdes.rda") # Estimated HR areas; object called 'AKDES'
-
 
 #-----------------------------------------------------
 # Home-range overlap
@@ -98,13 +98,12 @@ plot(DISTS$est ~ DISTS$timestamp,
      col = "#5e548e")
 
 
-#Internal plotting function (work in progress)
+# Internal plotting function (work in progress)
 ctmm:::ts.plot(DISTS)
 
-
+# what would totally independent motion look like?
 cilla_sim <- simulate(FITS$Cilla, t = buffalo$Cilla$t)
 mvubu_sim <- simulate(FITS$Mvubu, t = buffalo$Mvubu$t)
-
 
 sim_dists <- distances(list(cilla_sim, mvubu_sim),
                        FITS[c("Cilla","Mvubu")])
@@ -136,8 +135,9 @@ plot(sim_dists$est ~ sim_dists$timestamp,
      ylim = c(0,max(sim_dists$est)))
 
 
-
 # Proximity ratio (note: can be slow)
+help('proximity')
+
 PROXIMITY <- proximity(buffalo[c("Cilla","Mvubu")],
                        FITS[c("Cilla","Mvubu")])
 load("data/buffalo_proximity.rda")

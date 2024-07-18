@@ -33,6 +33,9 @@ news(package="ctmm")
 # remotes::install_github("ctmm-initiative/ctmmweb")
 # ctmmweb::app()
 
+# ctmm MoveApps
+browseURL("https://www.moveapps.org/apps/browser?q=ctmm")
+
 ###################
 # IMPORT AND VISUALIZE
 ###################
@@ -246,6 +249,20 @@ zoom(ACF2,main='ACF of "OUF" Residuals')
 ctmm.guess(DATA,variogram=SVF)
 # why is this model fit deflected down?
 zoom(SVF,FITS$`OU anisotropic`,main='ACF of "OU" Residuals')
+
+######################
+# Non-resident models
+ctmm.guess(DATA,ctmm(range=FALSE))
+FITS2 <- ctmm.select(DATA,GUESS,verbose=TRUE,trace=3)
+
+summary(FITS2)
+zoom(SVF,FITS2[["IOU anisotropic"]])
+zoom(SVF,FITS2[["BM anisotropic"]])
+
+# Likelihoods/AICs cannot be compared
+summary(c(FITS,FITS2))
+
+# see help("ctmm.select") IC="LOOCV" argument for tiny tracks
 
 ################
 # TEASER

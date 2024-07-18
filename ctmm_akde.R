@@ -65,6 +65,11 @@ summary(AKDE)
 plot(DATA,wAKDE,ext=EXT,main="optimally weighted AKDE")
 summary(wAKDE)
 
+# Over-smoothing bias
+osAKDE <- akde(DATA,FIT,weights=TRUE,debias=FALSE)
+
+plot(DATA,osAKDE,ext=EXT,main="uncorrected wAKDE")
+
 ###########################
 # Home-range meta-analysis
 ###########################
@@ -95,7 +100,7 @@ plot(AKDES,col.UD=COL,col.level=COL,col.grid=NA,level=NA,main="African buffalo A
 # Mean buffalo HR "the old way"
 AREA <- vector("numeric", length = length(AKDES))
 for(i in 1:length(AKDES))
-{ AREA[i] <- summary(AKDES[[i]])$CI[2] }
+{ AREA[i] <- summary(AKDES[[i]],units=FALSE)$CI[2] }
 AREA
 mean(AREA) # mean
 sqrt(var(AREA)/length(AREA)) # SE
@@ -113,7 +118,13 @@ meta(AKDES,plot=FALSE,IC=NA)
 
 # comparing sub-groups
 BUFFALO <- list(South=AKDES[1:3],North=AKDES[4:6])
-meta(BUFFALO)
+META <- meta(BUFFALO)
+
+META['South/','/North',]
+
+# more general meta-analytic regressions
+help("Log")
+# then you can use the 'metafor' R package
 
 #########################
 # Population density
