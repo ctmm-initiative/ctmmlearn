@@ -24,6 +24,7 @@ load("data/tapir-iso.rda")
 
 # raster covariates must be in a named list
 R <- list(tree=treecover)
+# see raster::as.factor() for categorical variables
 
 # AKDE (no RSF)
 AKDE <- akde(DATA,FIT,weights=TRUE)
@@ -51,10 +52,19 @@ RSF <- rsf.fit(DATA,AKDE,R=R,integrator="Riemann")
 
 summary(RSF)
 
-# Advantages of rsf.fit() iRSFs over regular RSFs
+# Advantages of rsf.fit() iRSFs over regular RSFs:
 # * log-likelihood is down-weighted to account for autocorrelation and irregular sampling
 # * available points are randomly sampled until numerical convergence
 # * available area is estimated - uncertainty is propagated (iRSF)
+
+# iRSF or iSSF, which to choose? (for iSSFs, see the 'amt' R package)
+# * RSFs requires range residence, SSFs do not
+# * SSFs can model fine scale selection, and may have larger DOFs for fine-scale data
+#     DOF[RSF] ~ DOF[area]
+#     DOF[SSF] ~ DOF[diffusion]
+# * SSFs are discrete time and cannot handle irregular data
+# * RSFs directly output utilization-distribution (UD) information,
+#     SSF selection parameters have a different meaning, and their UD is non-trivial
 
 ## rsf.select() can do model selection on multiple predictors
 RSFS <- rsf.select(DATA,AKDE,R=R,formula=~I(sqrt(tree))+tree+I(tree^2),integrator="Riemann",verbose=TRUE,trace=TRUE)
