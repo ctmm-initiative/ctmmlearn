@@ -186,6 +186,6 @@ plot(N ~ enc_rad,
 
 
 #Estimate relative encounter rates
-RATES <- encounter(AKDES)
+RATES <- encounter(AKDES,method="PDF")
 RATES$CI["Cilla","Mvubu",] * 100^2 # good for small distances
 tanh(sqrt(RATES$CI["Cilla","Mvubu",])*100)^2 # more reliable

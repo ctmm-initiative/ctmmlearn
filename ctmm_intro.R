@@ -225,9 +225,15 @@ summary(FITS[[1]])
 # area here is Gaussian area
 # speed here is Gaussian RMS speed
 
+# 5% location autocorrelation remaining
+exp(-3)
+summary(FITS[[1]])$CI[2,] * 3
+
 summary(DATA)
 (4.967566 %#% 'months') / (7.505372 %#% 'days')
 help("%#%")
+
+sigfig(summary(FITS[[1]])$CI[2,] * 3)
 
 plot(DATA,FITS[[1]],main="Anisotropic Gaussian") # anisotropic
 plot(DATA,FITS[[2]],main="Isotropic Gaussian") # isotropic

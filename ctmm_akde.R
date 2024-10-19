@@ -119,7 +119,7 @@ meta(AKDES,plot=FALSE,IC=NA)
 # comparing sub-groups
 BUFFALO <- list(South=AKDES[1:3],North=AKDES[4:6])
 META <- meta(BUFFALO)
-
+META
 META['South/','/North',]
 
 # more general meta-analytic regressions

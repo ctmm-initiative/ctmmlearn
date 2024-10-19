@@ -27,7 +27,7 @@ data(gazelle)
 DATA <- gazelle[[18]]
 
 COL <- color(DATA,by='time')
-plot(DATA,col=COL)
+plot(DATA,col=COL,error=FALSE)
 
 # guestimate model parameters
 GUESS <- ctmm.guess(DATA,interactive=FALSE)
