@@ -50,6 +50,7 @@ help("as.telemetry")
 # loading data from Movebank CSV (which can be compressed)
 Buffalo <- as.telemetry('data/Kruger African Buffalo, GPS tracking, South Africa.zip')
 # you can also import from a move object, data.frame, etc.
+rm(Buffalo)
 
 #! load buffalo dataset from ctmm
 data(buffalo)
@@ -148,7 +149,7 @@ help("variogram")
 vignette('variogram')
 # Sec. "Irregular Sampling Schedules"
 
-# more accurate CIs, too slow for larger datasets
+# more accurate CIs, too slow for larger datasets, not good on very irregular datasets
 SVF <- variogram(DATA,CI="Gauss")
 
 # frequently you want to zoom in to the beginning of the variogram
@@ -233,7 +234,7 @@ summary(DATA)
 (4.967566 %#% 'months') / (7.505372 %#% 'days')
 help("%#%")
 
-sigfig(summary(FITS[[1]])$CI[2,] * 3)
+sigfig(summary(FITS[[1]])$CI[2,] * 3) # FIX ME
 
 plot(DATA,FITS[[1]],main="Anisotropic Gaussian") # anisotropic
 plot(DATA,FITS[[2]],main="Isotropic Gaussian") # isotropic

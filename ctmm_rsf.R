@@ -37,7 +37,7 @@ KDE <- akde(DATA,IID)
 help("rsf.fit")
 
 # assigned weight without autocorrelation
-plot(DATA$timestamp,mean(KDE$DOF.area) * KDE$weights,xlab='time',ylab="weight")
+plot(DATA$timestamp,mean(KDE$DOF.area) * KDE$weights,xlab='time',ylab="weight",ylim=c(0,1.2))
 # How many points do you need for an IID RSF estimate?
 # iRSF without autocorrelation: iterates until the default 1% error threshold
 RSF.IID <- rsf.fit(DATA,KDE,R=R)

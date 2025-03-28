@@ -67,14 +67,12 @@ summary(wAKDE)
 
 # Over-smoothing bias
 osAKDE <- akde(DATA,FIT,weights=TRUE,debias=FALSE)
-
 plot(DATA,osAKDE,ext=EXT,main="uncorrected wAKDE")
+summary(osAKDE)
 
 ###########################
 # Home-range meta-analysis
 ###########################
-
-help("meta")
 
 FITS <- list()
 for(i in 1:length(buffalo))
@@ -104,7 +102,6 @@ for(i in 1:length(AKDES))
 AREA
 mean(AREA) # mean
 sqrt(var(AREA)/length(AREA)) # SE
-
 
 help('meta',package="ctmm")
 

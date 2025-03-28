@@ -41,11 +41,12 @@ OVER
 
 # pairwise CIs 
 OVER$CI["Pepper","Toni",]
-OVER$CI["Queen","Toni",]
+OVER$CI["Cilla","Gabs",]
 
 # point estimates
 OVER$CI[,,"est"]
 
+?overlap # method options
 
 #-----------------------------------------------------
 # Encounter location distributions (CDE)
@@ -66,7 +67,7 @@ plot(buffalo[c("Pepper", "Queen")],
 
 
 #Estimate the home range overlap
-overlap(AKDES[c("Pepper", "Queen")])
+overlap(AKDES[c("Pepper", "Queen")])$CI[1,2,]
 
 
 #Estimate the CDE
@@ -91,6 +92,7 @@ help("proximity")
 DISTS <- distances(buffalo[c("Cilla","Mvubu")],
                    FITS[c("Cilla","Mvubu")])
 
+head(DISTS)
 
 #Visualise the separation distances
 plot(DISTS$est ~ DISTS$timestamp,
@@ -186,6 +188,8 @@ plot(N ~ enc_rad,
 
 
 #Estimate relative encounter rates
-RATES <- encounter(AKDES,method="PDF")
-RATES$CI["Cilla","Mvubu",] * 100^2 # good for small distances
-tanh(sqrt(RATES$CI["Cilla","Mvubu",])*100)^2 # more reliable
+RATES <- encounter(buffalo,AKDES,method="PDF")
+RATES$CI["Cilla","Mvubu",] * 1000^2 # good for small distances
+tanh(sqrt(RATES$CI["Cilla","Mvubu",])*1000)^2 # more reliable
+
+tanh(sqrt(RATES$CI["Cilla","Mvubu",])*10000)^2 # more reliable
