@@ -1,3 +1,6 @@
+# WIFI: TWS2025
+# PASS: Wildlife1936
+
 ###################
 # HELP
 ###################
@@ -139,7 +142,7 @@ plot(DATA,col=COL)
 
 #! calculate a variogram object (named SVF) from the telemetry object
 SVF <- variogram(DATA)
-plot(SVF,main="Variogram")
+plot(SVF,main="Variogram",level=c(0.5,0.95))
 # on average how far apart (in distance^2) given a time lag between any two points
 
 # help file for variogram
@@ -154,7 +157,7 @@ SVF <- variogram(DATA,CI="Gauss")
 
 # frequently you want to zoom in to the beginning of the variogram
 # plot with zoom slider
-zoom(SVF,main="Variogram with good CIs")
+zoom(SVF,main="Variogram with good CIs",level=c(0.95,0.96))
 # things to look for
 # * the asymptote (if any)
 # * how long does it take to asymptote
@@ -204,7 +207,7 @@ summary(FITS$`IID anisotropic`)
 plot(DATA,FITS$`IID anisotropic`,main="IID Gaussian Distribution")
 
 # compare empirical variogram to that of model
-zoom(SVF,FITS$`IID anisotropic`,main="IID Variogram")
+zoom(SVF,FITS$`IID anisotropic`,main="IID Variogram",level=c(0.95,0.96))
 
 # calculate residuals
 RES <- residuals(DATA,FITS$`IID anisotropic`)
@@ -228,18 +231,19 @@ summary(FITS[[1]])
 
 # 5% location autocorrelation remaining
 exp(-3)
-summary(FITS[[1]])$CI[2,] * 3
+summary(FITS[[1]])$CI["τ[position] (days)",] * 3
 
 summary(DATA)
 (4.967566 %#% 'months') / (7.505372 %#% 'days')
 help("%#%")
 
-sigfig(summary(FITS[[1]])$CI[2,] * 3) # FIX ME
+sigfig(summary(FITS[[1]])$CI["τ[position] (days)",] * 3) 
 
 plot(DATA,FITS[[1]],main="Anisotropic Gaussian") # anisotropic
 plot(DATA,FITS[[2]],main="Isotropic Gaussian") # isotropic
 
-zoom(SVF,FITS[[1]],main="OUF Variogram")
+zoom(SVF,FITS[[1]],main="OUF Variogram",level=c(0.95,0.96))
+zoom(SVF,FITS[[1]],main="OUF Variogram",level=c(0.95,0.96),fraction=0.02)
 # not perfect, but much better
 
 # residuals
@@ -255,7 +259,7 @@ zoom(ACF2,main='ACF of "OUF" Residuals')
 # you can do well by hand
 ctmm.guess(DATA,variogram=SVF)
 # why is this model fit deflected down?
-zoom(SVF,FITS$`OU anisotropic`,main='ACF of "OU" Residuals')
+zoom(SVF,FITS$`OU anisotropic`,main='"OU"',level=c(0.95,0.96))
 
 ######################
 # Non-resident models

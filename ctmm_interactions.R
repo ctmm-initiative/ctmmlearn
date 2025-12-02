@@ -159,7 +159,7 @@ help("encounter")
 # Relevant paper: https://doi.org/10.1101/2023.06.07.544097
 
 #Empirical encounters
-DISTS$encounter <- ifelse(DISTS$est <= 100, 1, 0)
+DISTS$encounter <- ifelse(DISTS$est <= 1000, 1, 0)
 
 #Visualise the results
 par(mfrow = c(1,1))
@@ -167,10 +167,8 @@ plot(DISTS$encounter ~ DISTS$timestamp)
 cdplot(as.factor(DISTS$encounter) ~ DISTS$timestamp)
 
 #Empirical Encounter rate (n/day)
-n <- sum(DISTS$encounter)
-t <- "day" %#% (DISTS$t[nrow(DISTS)] - DISTS$t[1])
-n/t
-
+P <- mean(DISTS$encounter)
+P
 
 #If you do this, run a sensitivity analysis
 enc_rad <- 1:1000

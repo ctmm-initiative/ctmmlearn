@@ -68,7 +68,8 @@ summary(RSF)
 
 ## rsf.select() can do model selection on multiple predictors
 RSFS <- rsf.select(DATA,AKDE,R=R,formula=~I(sqrt(tree))+tree+I(tree^2),integrator="Riemann",verbose=TRUE,trace=TRUE)
-summary(RSFS)
+summary(RSFS,IC="AICc") # for predictions 
+summary(RSFS,IC="BIC") # for consistency
 
 # selected model
 RSF <- RSFS[[1]]
@@ -86,7 +87,7 @@ help("agde")
 
 AGDE <- agde(DATA,RSF,R=R)
 # note the finite available area that was estimated
-plot(DATA,AGDE,main='iRSF')
+plot(DATA,AGDE,main='iRSF',col.level=NA)
 
 # suitability maps
 help("suitability")
@@ -99,6 +100,6 @@ plot(DATA,error=2,R=SUIT[['est']],col.grid=NA,main="suitability")
 help('akde')
 
 RAKDE <- akde(DATA,RSF,R=R,weights=TRUE)
-plot(DATA,error=2,UD=RAKDE,col.grid=NA,main="iRSF-AKDE")
+plot(DATA,error=2,UD=RAKDE,col.grid=NA,main="iRSF-AKDE",col.level=NA)
 
 # you can also add boundaries at the kernel level

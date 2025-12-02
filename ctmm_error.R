@@ -224,7 +224,8 @@ plot(DATA)
 plot(SMOOTH)
 
 SIM <- simulate(DATA,FITS[[1]])
-plot(SIM)
+COL <- color(SIM,by="time")
+plot(SIM,col=COL)
 
 ## IF YOU DIDN'T HAVE CALIBRATION DATA, SUPPLY A PRIOR
 

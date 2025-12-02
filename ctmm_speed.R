@@ -27,7 +27,7 @@ load("data/cilla.rda")
 DATA <- DATA[DATA$t <= DATA$t[1] + 1%#%'week',]
 plot(DATA,col=color(DATA,by='time'),error=FALSE)
 
-# fit to first month only
+# fit to first week only
 FIT <- ctmm.select(DATA,FIT,trace=3)
 
 # the speed estimate here is RMS Gaussian

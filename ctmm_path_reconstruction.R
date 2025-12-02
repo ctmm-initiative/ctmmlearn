@@ -25,7 +25,7 @@ load("data/cilla.rda")
 SUB <- DATA[1:10,]
 
 # plot subset
-plot(SUB)
+plot(SUB,col=color(SUB,by='time'))
 
 # if working with this amount of data, you might consider alternative ICs
 # in particular IC="LOOCV"
@@ -45,6 +45,7 @@ PRED <- predict(SUB,FIT,t=SEQ)
 
 # plot predictions & data
 plot(list(PRED,SUB),col=c('blue','red'))
+plot(list(PRED,SUB),col=c('blue','red'),error=FALSE) # Most Likely Path (MLP)
 
 #############
 # CONDITIONAL SIMULATION
