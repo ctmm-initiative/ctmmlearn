@@ -102,6 +102,7 @@ plot(DISTS$est ~ DISTS$timestamp,
 
 # Internal plotting function (work in progress)
 ctmm:::ts.plot(DISTS)
+ctmm:::ts.plot(DISTS[575:600,],ylim=c(0,1000))
 
 # what would totally independent motion look like?
 cilla_sim <- simulate(FITS$Cilla, t = buffalo$Cilla$t)

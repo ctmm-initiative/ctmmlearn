@@ -229,7 +229,7 @@ plot(SIM,col=COL)
 
 ## IF YOU DIDN'T HAVE CALIBRATION DATA, SUPPLY A PRIOR
 
-# load un-calibrated datas
+# load un-calibrated data
 data(turtle)
 
 # will need to match the class structure (2D,3D here)
