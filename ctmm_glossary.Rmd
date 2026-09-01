@@ -1,0 +1,187 @@
+---
+title: "Working Glossary of Key Terms"
+author: "Erika Y. Lin and Christen H. Fleming"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{css, echo = FALSE}
+
+/* Target the Table of Contents container */
+#TOC {  
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 10px;
+  padding-right: 6px;
+  width: 80%;
+  max-width: 160px;
+}
+
+/* Force the unordered list to display items horizontally */
+#TOC ul {
+  padding-left: 0;
+  margin-bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  list-style-type: none;
+}
+
+/* Style the spacing between individual TOC elements */
+#TOC li {
+  margin-right: 2px;
+  padding: 2px;
+}
+
+/* Style for nested subheaders (Level 3+) */
+#TOC ul ul ul{
+  display: none; /* Hides subheaders to keep the top bar clean */
+}
+
+/*.main-container {
+  margin-left: 50px;
+}*/
+
+/* Main text margins */
+body {
+  max-width: 90%;
+  margin-left: 10px;
+}
+
+```
+
+*Last updated: `r Sys.Date()`*
+
+---
+
+# 
+
+## A 
+
+- **Autocorrelation**: Data are correlated within a variable, such that data are not independent and each point does not provide 100% new information. Tracking collects data as a time-series, so data are temporally autocorrelated. (See also "AKDE," "Effective sample size," "Autocorrelation function," and "Variogram (Semivariogram)")
+- **Autocorrelation function (ACF)**: Statistical tool for detecting autocorrelation in time-series data. Plots the autocorrelation coefficient ($\frac{\text{var}_{t+\text{lag}}}{\text{var}_t}$) against the time lag. (See also "Autocorrelation" and "Variogram (Semivariogram)")
+- **Autocorrelated kernel density estimation (AKDE)**: Kernel density estimation (KDE) method that assumes that data come from an autocorrelated, continuous movement process. This produces more reasonable home range estimates and provides confidence intervals. (See also "Autocorrelation," "Home range," and "Kernel density estimation (KDE)")
+- **Akaike's Information Criterion (AIC)**: Likelihood-based information criterion with a penalty for model complexity (penalizes models with more parameters), which is used for model selection. Of the models tested, the one with the smallest AIC best fits the data. AIC is only informative when considered relative to other AIC values.
+
+## B
+
+- **Bhattacharyya coefficient (Bhattacharyya affinity)**: Measure of the similarity between two probability distributions. In movement ecology, this can be used to study the overlap in range distributions.
+- **Brownian motion**: Markov process where the next location is normally distributed around the current location with its variance proportional to how long you wait. (See also "Markov process" and "Stochastic process")
+
+## C
+
+- **Conditional distribution of encounters (CDE)**: The distribution of long-term encounter location probabilities for movement that occurs within home ranges, essentially where we would expect the majority of encounters between individuals to occur.
+- **Continuous-time movement modeling**: An approach to modeling animal movement data as a continuous-time stochastic process (e.g., Brownian motion, Ornstein-Uhlenbeck (OU) motion, Integrated Ornstein-Uhlenbeck (IOU), Ornstein-Uhlenbeck foraging (OUF)), to account for autocorrelation and irregular sampling schedules. Methods are available in the `ctmm R` package: https://github.com/ctmm-initiative
+
+## D
+
+- **Dilution of precision (DOP)**: A relative measure of location error, proportional to root-mean-squared (RMS) error, which can be used to calibrate data and obtain absolute location error estimates.
+- **Discrete-time movement modeling**: An approach to modeling animal movement data as a discrete-time stochastic process, where location data are assumed to be independent. Discrete-time modeling has been the traditional approach to animal movement modeling and many software/packages are available for different types of analyses. There has been a transition toward continuous-time movement modeling as tracking data resolution improves. Some analyses are currently only available in discrete-time (e.g., RSF, SSF, etc.).
+- **Dispersal**: Movement from one area to another that is generally permanent and typically results in the establishment of a range once settled.
+- **Distribution**: The spread of data or possible values for a variable and the shape of that spread. (See also "Probability distribution", "Occurrence Distribution", "Range Distribution)
+
+## E
+
+- **Effective sample size**: The number of independent and identically distributed (IID) locations required to produce an estimate that is just as good as using the absolute sample size (total number of locations recorded). The effective sample size is a more reliable estimate of the amount of information in a dataset, due to the impact of autocorrelation. (See also "Autocorrelation")
+- **Encounter rate:**: The rate at which encounters between two individuals occur, which can be measured as the number of estimated encounters over time. Note that the number of estimated encounters depends on the size of the radius around each individual at which an encounter is counted and the duration of what is considered a single encounter.
+- **Error**: Uncertainty in a value that is either due to the equipment, study design, and/or model assumptions (systematic error). Not accounting for this can cause our estimates to be biased. Error may also result from sampling or by random chance (stochastic error). (See also "Location error")
+
+## F
+
+
+## G
+
+
+## H
+
+<!-- - **Hidden Markov Model**: (See also "Markov process") -->
+- **Habitat selection**: The preference or avoidance of different habitat qualities for an individual or population. A habitat selection analysis addresses the question of why an animal lives in a certain place. This can be broad scale or finer scale within areas of a home range. (See also "Integrated resource selection function (iRSF)")
+- **Home range (HR)**: Area repeatedly used throughout an animal's lifetime for all its normal behaviors and activities. This can be a seasonal home range. The home range excludes occasional exploratory excursions. Note that there may be some differences in how this term is used in statistical language compared to its biological definition. (See also "Range distribution" and "Range resident")
+- **Home range overlap**: The extent of shared space of a pair of individuals, calculated with an overlap metric of their home ranges (typically Bhattacharyya coefficient). (See also "Bhattacharyya coefficient (Bhattacharyya affinity)")
+
+## I
+
+- **Independence**: Where the outcome or value of one random variable does not influence the outcome of another. If variables in your data are independent, then they do not depend on each other. (See also "Independent and identically distributed (IID)")
+- **Independent and identically distributed (IID)**: Random variables are independent and identically distributed if they follow the same underlying probability distribution and their values do not influence each other (mutually independent). (See also "Independence")
+- **Integrated resource selection function (iRSF)**: A bias-corrected resource selection function that simultaneously estimates availability and resource selection, while also accounts for autocorrelation in the telemetry data. (See also "Resource selection function (RSF)" and "Habitat selection")
+
+## J
+
+
+## K
+
+- **Kernel density estimation (KDE)**: A non-parametric method for estimating a distribution from data, where the probability density can be likened to intensity of use. For movement data, the KDE distribution assumes that animal locations are independent (see also "Autocorrelated KDE" and "Non-parametric")
+- **Kriging**: Statistical tool for interpolating between discrete locations based on autocorrelation.
+
+## L
+
+- **Location error (GPS location error)**: The spatial uncertainty in the recorded location by a device due to the configuration of the relay network at that given point location and time. This can be though of as the difference between the coordinates provided by the tracking device and the true position, which can be estimated.
+
+## M
+
+- **Markov process**: Type of stochastic process where the future state of the system depends only on its current state, not on the sequence of events that preceded it.
+- **Migration**: Movement behavior that can be characterized by regular (seasonal) transitory movement to and from spatially disjoint ranges. This may occur at the population level for species where individuals do not complete the migratory cycle in their lifetime (e.g., monarch butterflies).
+
+## N
+
+- **Nomadic**: Movement behavior that can be characterized by irregular temporal and spatial patterns (not range resident or migratory).
+- **Non-parametric**: The underlying probability distribution (and its parameters) is unknown. For modeling animal movement, this means that we are not explicitly modeling the causes of the space use.
+
+## O
+
+- **Occurrence distribution**: The distribution of the animal's past locations (i.e., where did the animal go during the period of observation?). This distribution is sampling dependent. This does not correspond to a home range. (See also "Home range")
+
+## P
+
+- **Pairwise proximity ratio**: Estimated ratio of the distances between individuals, where two individuals are closer on average than expected from independent movement if <1, further on average than expected from independent movement if >1, and where movement between the individuals is shows no relationship if equal to 1.
+- **Pairwise separation distance**: Instantaneous distance between two individuals at any given time.
+- **Periodogram**: Tool for visualizing the log spectral density of variance in data as a function of period (1/frequency), which is useful for finding periodic patterns in movement across different timescales.
+- **Position autocorrelation ($\tau_p$)**: The timescale for the autocorrelation in the position of an animal recorded location points; this is the time lag at which the animal's locations are no longer correlated. In more biological terms, this represents the average time needed for an animal to cross its home range.
+
+## Q
+
+
+## R
+
+- **Range distribution**: The distribution of an animal's potential space use over long time (i.e., how much space do they use and need to use in the future?). This distribution is not sampling dependent. This can represent an individual's home range. (See also "Home range")
+- **Range resident**: Movement behavior where an animal occupies the same area throughout its lifetime or significant portions of its lifetime (e.g., breeding range). Note that this can have a different statistical meaning than what would biologically be considered a home range. (See also "Range distribution" and "Home range")
+- **Resource selection function (RSF)**: Parametric method for modeling habitat selection. Traditionally RSFs estimate animal resource use by relating animal locations in "used" versus "available" points in the habitat (in their estimated home range). (See also "Integrated resource selection function (iRSF)" and "Habitat selection")
+
+## S
+
+- **Step length**: Euclidean (straight-line) distance between two consecutive locations.
+- **Step-selection function (SSF)**: A type of habitat selection analysis that measures selection at the scale of each step (between each successive pair of points). For more information, see the `amt` package. (See also "Habitat selection")
+- **Stochastic process**: A process that incorporates uncertainty and unpredictability, describing change in some phenomenon over time. A stochastic process is randomness with some structure that can be used to model the process. (See also "Uncertainty" and "Error")
+
+## T
+
+- **Trajectory**: Path of spatial locations over time. This can be discrete (assuming independent location points with not information about the path between) or continuous (each location point is related to some degree to the location points that precede or follow it).
+- **Turning angle**: Relative internal angles between consecutive locations, indicating change in direction.
+
+## U
+
+- **Uncertainty**: Statistical variability around the mean; this can also refer to noise in measurements, data, or statistics, either random (stochastic) or systematic. This term is generally interchangeable with "error." (See also "Error", Location error")
+- **Utilization distribution**: An animal's distribution and probability density of space use throughout an area. (See also "Occurrence distribution" and "Range distribution")
+
+## V
+
+- **Variogram (Semivariogram)**: Tool for visualizing autocorrelation in location data as semivariance across lags. Semivariance is the mean square distance between any 2 locations with a given lag between (lower semivariance = pairs of locations are more similar for that lag, greater autocorrelation). The lag at which the variogram asymptotes is when the data are no longer autocorrelated.
+- **Velocity autocorrelation ($\tau_v$)**: The timescale of the autocorrelation in an animal's movement velocity; this is the time lag at which the animal's velocity is no longer autocorrelated. In more biological terms, this represents the directional persistence of an individual (average time an animal travels in the same direction). (See also "Autocorrelation")
+
+## W
+
+
+## X
+
+
+## Y
+
+
+## Z
+
+

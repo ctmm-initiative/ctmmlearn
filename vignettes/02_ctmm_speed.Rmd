@@ -1,0 +1,348 @@
+---
+title: "`ctmm`-Based Movement Metrics: Speed and Distance"
+subtitle: "Continuous-Time Movement Modeling"
+author: "Christen H. Fleming and Erika Y. Lin"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    toc_collapse: true
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+*Created: 2026-06-30* | *Last updated: `r Sys.Date()`* 
+
+<a href="https://github.com/ctmm-initiative/ctmmlearn.git" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+---
+
+## Learning Objectives
+
+By the end of this module you will be able to:
+
+1. Estimate the mean speed of an animal from its tracking data.
+2. Perform a meta-analysis to estimate the mean speed of a population.
+3. Calculate instantaneous speeds and derive distances from speed estimates.
+
+**Packages used:** `ctmm`
+
+---
+
+## Background
+
+Estimating the movement speed of an individual animal and its distance traveled can provide insights into its behavior and activity (energetics). Ideally, we would need very fine sampling to get good, realistic estimates of distance traveled based on an individual's tracked movement path, from which we can calculate its speed. Of course, this is not always feasible and there are often many logistical constraints for using a short sampling interval, as well as [trade-offs with sampling duration](https://doi.org/10.1002/ece3.73755).
+
+Conventional straight-line distance (SLD) can be easily calculated as $\sqrt{(\Delta x^2+\Delta y^2)}$, but this is heavily biased. In many cases, SLD will underestimate the true distance traveled, unless an animal moves in a perfectly straight line. And, in cases where the animal does not move much relative to the GPS location error (*more to come*) of its tracking device, SLD can greatly overestimate the distance traveled. This also impacts our speed estimates. Here, we will use the [continuous-time speed and distance (CTSD)](https://doi.org/10.1186/s40462-019-0177-1) estimator to get more accurate mean speed, instantaneous speeds, and distance estimates based on the CTMM framework.
+
+## Data preparation
+
+Like in the previous module, let's first import our data, center the projection so that North points up, and then visualize our data. We will use the GPS-collared African buffalo (*Syncerus caffer*) data set again, but we will focus just on the first individual, Cilla.
+
+### Import and Visualize Data
+
+```{r import_data}
+
+# Load ctmm package
+library(ctmm)
+
+# Load buffalo dataset from ctmm
+data(buffalo)
+
+# Projection with North = up
+projection(buffalo) <- median(buffalo)  # center on geometric median of locations
+
+# Let's consider just first buffalo (Cilla)
+DATA <- buffalo[[1]]
+
+# Plot Cilla's tracks
+plot(DATA, col = color(DATA, by = "time"),  # color by time
+     main = "Cilla's tracks colored by time")
+
+```
+
+### Model Selection
+
+Remember that model selection (`ctmm.select`) is often the slowest step of the analysis, but also absolutely integral to any continuous-time analysis, so it is good practice to store the results and save it as an R data file (.rda) that can be easily (and quickly) reloaded whenever it is needed.
+
+```{r ctmm.select, eval = FALSE}
+
+# Model selection
+## Guesstimate autocorrelation parameters
+GUESS <- ctmm.guess(data = DATA, interactive = FALSE)  
+FIT <- ctmm.select(data = DATA, CTMM = GUESS)  # fit and select movement models
+save(FIT, file = "data/Cilla.rda")  # save results
+
+```
+
+```{r ctmm.select2}
+
+# Load model fits from ctmm.select
+load("data/cilla.rda")
+
+# Remember our handy units operator?
+# help(`%#%`)  # conversion to SI units
+
+1 %#% 'day'  # 1 day in seconds
+1 %#% 'year'  # 1 year in seconds
+
+```
+
+For the sake of time, we will demonstrate speed estimation on only the first week of data. This is where handy `%#%` unit conversion operator can be especially helpful. We will use it to subset our data to the first week, by having it calculate the number of seconds in 1 week and keeping everything in our data that is equal or less than that. Then, we will re-fit our movement models to that data subset, in case Cilla behaved differently in that first week compared to her overall movement. We can just use the models we already fit (`FIT`) as a starting point for this.
+
+```{r ctmm.select3}
+
+# For the sake of time, we will demonstrate only on the first week of data
+DATA <- DATA[DATA$t <= DATA$t[1] + 1 %#% 'week',]  # subset to first week
+
+# Plot without errors (easier to see the location points)
+plot(DATA, col = color(DATA, by = 'time'),  # color by time
+     error = FALSE, main = "First week of tracking data")
+## Less data so ctmm.select should fit relatively quicker
+
+# Re-fit to first week only
+FIT <- ctmm.select(DATA, FIT, trace = 1)
+summary(FIT)$name  # OUF anisotropic was the best fit model
+
+```
+
+## Speed and Distance Estimation
+
+### RMS Speed and Mean Speed
+
+The summary of parameter estimates output from model selection gives a value for speed from the best fit model. This is the estimate for Gaussian root-mean squared (RMS) speed, which is a proxy for the actual average speed.
+
+$$\text{RMS Speed}=\hat{v}_{RMS}=\sqrt{E[v^2]}$$
+
+$$\text{Mean Speed}=\hat{\bar{v}}=E[v]$$
+
+$$\text{Mean Speed (over tracked period)}=\frac{1}{t_n-t_1}\times\int_{t_1}^{t_n}{v(t)\space dt}$$
+
+Both speed estimates assume Gaussian (Normal) distributed locations and speeds.
+
+```{r speed}
+
+# Gaussian RMS speed from summary statistics
+summary(FIT)
+## contains Gaussian root-mean squared (RMS) speed -- proxy of speed
+## mean speed: v^- = E[v] = 1/(tn-t1)*integral of speed over time
+## RMS speed: v_rms = root(E[v^2])
+
+```
+
+Now let's calculate the Gaussian mean speed (regular mean speed, not RMS speed) from the best fit model. This should be within an order of magnitude of the RMS speed.
+
+```{r speed2}
+
+# Calculate Gaussian (regular mean speed - not RMS)
+speed(FIT, trace = FALSE)  # keep trace = TRUE to see the progress bar
+
+```
+
+### Continuous-time Speed and Distance (CTSD)
+
+It can often be difficult to disentangle the continuous-time movement process that dictates the speed of an animal, from the discrete-time sampling process (only track points every so often). [**Continuous-time speed and distance (CTSD)** estimation](https://doi.org/10.1186/s40462-019-0177-1) provides a non-parametric method for estimating mean speed, which targets the underlying continuous-time movement process of an individual. CTSD uses a simulation-based approach to sample from the distribution of trajectories conditioned on our data. we calculate the mean speeds of the trajectories simulated from our tracking data and the best-fit movement model to obtain a more robust mean speed estimate (averaging the simulated mean speeds).
+
+The function used is the same (`speed`), but here we will add the telemetry data for the simulations to condition, along with the selected movement model. We caution that speed estimation requires a model that includes the **velocity autocorrelation parameter** ($\tau_v$). Additionally, it is best practice to fit an error model (*more to come*) based on device calibration data to the data, as speed estimates can be overestimated if there is little movement relative to the magnitude of location error.
+
+```{r speed3}
+
+# Non-parametric speed estimation (CTSD: Noonan, et al., 2019)
+speed(DATA, CTMM = FIT, trace = FALSE)
+## This gives mean of mean speeds (from simulations)
+
+```
+
+> **NOTE:** When handling data for species with very distinct movement behaviours, *speed calculations should be segmented*. 
+>
+>   * For example, speeds should be calculated separately for birds when they are stationary/feeding on ground VS flying around.
+>
+> You can also segment day and night depending on the diel activity of your species; if not, for a diurnal species, there will be slight underestimation during day (when they are more active) and slight overestimation at night (when they are less active). Otherwise, CTSD is fairly insensitive to the effect of coarsening data. Other methods would estimate animal to be slower when data is sampled more coarsely (less frequently).
+
+Remember that these estimates are based on stationary movement models (assuming that parameters do not change over time), so you may wish to segment animal tracks if they exhibit different behaviors and run separate models on the partitioned data. See the [appendix](https://link.springer.com/article/10.1186/s40462-019-0177-1#Sec13) of Noonan et al. (2019) for more details.
+
+### Sensitivity Analysis Case Study
+
+Ideally, we want our speed estimates to be robust and as accurate to the true average speed of our animal as possible, but this is often limited by our ability to collect high enough resolution data. In this section, we will demonstrate how sampling parameters can impact speed estimates calculated using RMS speed, mean speed, and non-parametric speed estimation (CTSD), by conducting a sensitivity analysis to the sampling interval (i.e., time between consecutive location points).
+
+To reproduce what it would be like to have less data, we will coarsen the data by removing every other timestamp, such that we lose half the data, while still maintaining about the same sampling duration. This would effectively be sampling half as frequently (doubling the sampling interval). We will iterate this process until we can no longer reliably estimate the mean speed. Note that when we have less data, the models fit more quickly, but we cannot calculate a speed estimate if the data becomes too coarse (resolution of the data is not high enough). Let's see how the mean speed estimates change across the different methods. The original data was 1-hour sampling, so after the first iteration, we will have 2-hour sampling.
+
+```{r speed_coarsen}
+
+# Impact of coarsening the data
+SUB <- DATA  # duplicate so we don't lose the original data
+FIT.SUB <- FIT
+
+# Remove every other time
+## This coarsens the data by removing half of it, while maintaining the duration
+SUB <- SUB[as.logical(1:nrow(SUB)%%2),]
+FIT.SUB <- ctmm.select(SUB, FIT.SUB, trace = FALSE)  # fits more quickly w/ less data
+## the speed estimate here is RMS Gaussian
+## won't get speed estimate if too coarse 
+
+summary(FIT.SUB)  # wider CIs
+## Gaussian (regular speed - not RMS)
+## Note the diffusion rate
+
+# Mean speed
+speed(FIT.SUB, trace = FALSE)  
+## similar estimates to finer sampled data, but more uncertainty (larger CIs)
+
+# non-parametric speed estimation
+speed(SUB, FIT.SUB, trace = FALSE)  # fits more slowly w/ less data
+## Note lower DOF[speed], effective sample size for speed estimation
+## Movement model may switch when data is too coarse
+
+```
+
+Let's repeat this process again, now 4-hour sampling...
+
+```{r speed_coarsen2}
+
+# Remove every other time
+## This coarsens the data by removing half of it, while maintaining the duration
+SUB <- SUB[as.logical(1:nrow(SUB)%%2),]
+FIT.SUB <- ctmm.select(SUB, FIT.SUB, trace = FALSE)  # fits more quickly w/ less data
+## the speed estimate here is RMS Gaussian
+
+summary(FIT.SUB)  # wider CIs
+# Gaussian (regular speed - not RMS)
+
+# Mean speed
+speed(FIT.SUB, trace = FALSE)  
+## similar estimates to finer sampled data, but more uncertainty (larger CIs)
+
+# non-parametric speed estimation
+speed(SUB, FIT.SUB, trace = FALSE)  # fits more slowly w/ less data
+## Note lower DOF[speed], effective sample size for speed estimation
+## Movement model may switch when data is too coarse
+
+```
+
+Note that the non-parametric method for speed estimation fits more slowly with less data, as there is a lower effective sample size ($N_{\text{speed}}$ or DOF[speed], i.e., less information content in the data) for the simulations to be conditioned on, unless the sampling interval becomes too wide to be able to estimate speed. At some point, when the data becomes too coarse, the best-fit movement model selected by `ctmm.select` may change to one that no longer incorporates a velocity autocorrelation ($\tau_v$) component. In that case, we will no longer be able to obtain a speed estimate. However, we can look instead at the diffusion rate, which is a more reliable metric of animal movement activity. Additionally, we should consider the location error (*more to come*).
+
+Let's repeat the coarsening process one last time, now 8-hour sampling.
+
+```{r speed_coarsen3}
+
+# Remove every other time
+## This coarsens the data by removing half of it, while maintaining the duration
+SUB <- SUB[as.logical(1:nrow(SUB)%%2),]
+FIT.SUB <- ctmm.select(SUB, FIT.SUB, trace = FALSE)  # fits more quickly w/ less data
+## the speed estimate here is RMS Gaussian
+
+summary(FIT.SUB)  # wider CIs
+# Gaussian (regular speed - not RMS)
+
+# Mean speed
+speed(FIT.SUB, trace = FALSE)  
+## similar estimates to finer sampled data, but more uncertainty (larger CIs)
+
+# non-parametric speed estimation
+speed(SUB, FIT.SUB, trace = FALSE)  # fits more slowly w/ less data
+## Note lower DOF[speed], effective sample size for speed estimation
+## Movement model may switch when data is too coarse
+
+```
+
+Although, we can no longer estimate the animal's speed, we can still estimate her diffusion rate, which has stayed relatively insensitive to the sampling interval (remains more accurate and precise than speed), and does not require a model with velocity autocorrelation.
+
+## Population Mean Speed
+
+In this section, we will walk though how to conduct a meta-analysis, comparing mean speeds across individuals and calculating the average of mean speeds in the population. We will use the `meta` function for this (see `help(meta)`).
+
+```{r ctmm_meta, eval = FALSE}
+
+help('meta')  # population meta-analysis for movement parameters
+
+```
+
+First, we would need to go through the same speed estimation process as we did above (Sections 3-4.2), but for all 6 individual buffalo. We have already gone through the data preparation steps and run the model selection (Section 3), so let's start from loading in the saved model results (`FITS`):
+
+```{r ctmm_meta2}
+
+# Load in the fitted movement models for all 6 buffalo
+load("data/buffalo.rda")
+
+```
+
+Now we will use the CTSD method for estimating each buffalo's mean speed. This can be conveniently done by looping through the process for each individual, using a "for" loop. Since this process may be slow, depending on your data, so save your results!
+
+```{r ctmm_meta3, eval = FALSE}
+
+# Estimate mean speed for each buffalo
+SPEEDS <- list()  # empty list to store results
+for(i in 1:length(buffalo)) {  # open for loop
+  
+  # Estimate mean speed and store in the list
+  SPEEDS[[i]] <- speed(buffalo[[i]], FITS[[i]])  # this can be slow
+}  # close for loop
+
+names(SPEEDS) <- names(buffalo)  # match names to the buffalo
+
+save(SPEEDS, file = "data/buffalo_speeds.rda")  # save the results
+
+```
+
+```{r ctmm_meta4}
+
+# Since it can be a slower process, let's load the saved file
+load("data/buffalo_speeds.rda")  # mean speed estimates for each buffalo
+
+# Inspect the results for each individual by printing the `speeds` output
+SPEEDS
+
+# Speed meta-analysis
+meta(SPEEDS, sort = TRUE)  # mean = population mean of mean speeds
+
+# Diffusion rate meta-analysis
+meta(FITS, variable = "diffusion", sort = TRUE)  # mean = population mean diffusion rate
+
+```
+
+In the meta-analysis above, the model selection is performed with 2 models: inverse-Gaussian and Dirac-$\delta$, with the inverse-Gaussian being the selected model (lower AICc). The average of mean speeds across buffalo is about 12.3 km/day, highlighted in bold with its 95% CI on the output figure. This figure is a forest plot that compares the mean speed estimates of each individual and 95% CI bars, as well as the meta-analysis mean.
+
+Here we can see from the population mean diffusion rate (and mean speed) estimate, that Toni and Gabs are relatively less active. [DeNicola et al. (2025)](https://doi.org/10.1101/2025.07.17.665364) have found the diffusion rate to be a more reliable measure of movement activity across a wider range of datasets. This includes data where the resolution is too low to fit a model with a velocity autocorrelation parameter that would allow us to estimate mean speed. Together, the CTSD speed and diffusion rate estimates provide more robust metrics for animal movement activity and space use.
+
+## Instantaneous Speeds
+
+The mean speed provides a summary statistic of an animals activity, however, we are often more interested in calculating the instantaneous speed of an animal at a particular given time. For example, if we are concerned about an animals behavior around roads, we may want to know whether the animal crosses the road quickly or spends time dwelling around the edge before crossing. Instantaneous speeds can also provide an insight on changes in activity level during the course of its movement, either across different areas of its habitat or at different times of day. Instantaneous speeds and CTSD mean speed can also be used to derive the total distance traveled over the course of the study.
+
+Here, we will use the `speeds` function to calculate the CTSD instantaneous speed for our first buffalo (Cilla) at all timestamps, conditioned on our telemetry data and movement model. This includes both the estimated speed, as well as low and high CI bounds. We will then calculate the total distance traveled as: $$d=\sum_i{\Delta t_i|v(t_i)|}=\bar{v}\times\sum_j(\Delta t_j)$$ which is the product of the mean speed and total time traveled (sampling duration).
+
+```{r ctmm_instant_speed}
+
+# Speed at a particular given time
+INST_SPEEDS <- speeds(buffalo[[1]], FITS[[1]])  # Cilla's instantaneous speeds
+
+head(INST_SPEEDS)  # inspect first 6 times (rows) of the output
+
+# Distance = mean speed x total time
+nrow(buffalo$Cilla)  # 3527 total tracked locations
+mean_speed <- SPEEDS$Cilla$CI / 1 %#% "day"  # convert to km/s
+
+rownames(mean_speed) <- "distance (kilometers)"  # change output name to "distance"
+mean_speed * (buffalo$Cilla$t[3527]-buffalo$Cilla$t[1])  # total distance traveled
+
+```
+
+Cilla traveled about 1628.6 kilometers over the time that she was tracked.
+
+---
+
+## Key functions reference
+
+| Function | Package | Purpose | 
+|:---|:---|:---|
+| `speed()` | `ctmm` | Estimate the average speed of a tracked animal or use non-parametric estimation conditioned on the data | 
+| `speeds()` | `ctmm` | Calculate the instantaneous speed of a tracked animal at any given time |
+| `meta()` | `ctmm` | Estimate population-level mean parameters from individual movement models and estimates (meta-analysis) |
+
+---
+
+_Next: **Effective Sample Sizes** — We will define distinguish between the absolute sample size and effective sample size to understand why they are rarely equal. We will relate these concepts to common sampling issues and see how the effective sample size for different metrics can be extracted from our data._

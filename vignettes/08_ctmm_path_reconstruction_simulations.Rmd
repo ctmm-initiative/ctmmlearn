@@ -1,0 +1,437 @@
+---
+title: 'Path Reconstruction & Simulations'
+subtitle: "Continuous-Time Movement Modeling"
+author: "Michael J. Noonan, Christen H. Fleming, and Erika Y. Lin"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    toc_collapse: true
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+*Created: 2026-07-13* | *Last updated: `r Sys.Date()`*
+
+<a href="https://github.com/ctmm-initiative/ctmmlearn.git" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+---
+
+## Learning Objectives
+
+By the end of this module you will be able to:
+
+1. Make conditional predictions for animal locations based on the telemetry data and selected movement model, to get the most-likely-path taken by an individual.
+2. Simulate paths from a defined movement model and sampling schedule, conditional on data (if provided).
+3. Include parameter uncertainty in simulations by simulating a movement model from the sampling distribution of a defined movement model, conditional on data (if provided).
+
+**Packages used:** `ctmm`
+
+---
+
+## Background
+
+Movement analyses, such as home-range estimation, speed estimation, revisitation, and integrated resource selection, are all conditional analyses that depend on models fit to our movement data. These models, like our continuous-time movement (autocorrelation) models aim to capture trends and summarize our data, such that they can be used to inform downstream analyses. With our movement models, we can interpolate to reconstruct animal paths, fill in gaps in our tracking data, and project into the future space use. Simulations conditioned on movement models have also been used to evaluate how much space an animal could have used; for example, how would an animal's movement speed or home range size compare if there were no roads restricting their movement ([Noonan et al., 2022](https://doi.org/10.1111/acv.12728); [Mercer et al., 2026](https://doi.org/10.64898/2026.01.23.701409))?
+
+In this module, we will walk through how to predict from a movement model, reconstruct a most-likely path, and generate simulations (generic and conditional) from movement models. We wrap up the module with an example case study on white-nosed coatis (*Nasua narica*) in Panama ([Kays & Hirsch, 2015](https://doi.org/10.5441/001/1.41076dq1)).
+
+## Data Preparation
+
+To demonstrate, we will be using the African Buffalo (*Syncerus caffer*) dataset in `ctmm` for GPS-tagged buffalo in Kruger National Park, South Africa. First, let's import, visualize, and perform model selection on our data to find the best-fit model for our predictions and simulations.
+
+### Import and Visualize Data
+
+We will work with only one buffalo, Cilla, as an example.
+
+```{r import_data}
+
+# Load ctmm package
+library(ctmm)
+
+# Load buffalo data from package
+data(buffalo)
+projection(buffalo) <- median(buffalo)  # center projection on median
+
+names(buffalo)
+
+# Subset to Cilla
+DATA <- buffalo$Cilla
+plot(DATA, col = color(DATA, by = "time"))
+
+```
+
+### Model Selection
+
+Remember that model selection can be slow, because multiple candidate models are fit. We have already run this process and saved the results in an R data file (".rda"), which we can load in to save time.
+
+```{r ctmm.select, eval = FALSE}
+
+# Autocorrelation model selection
+GUESS <- ctmm.guess(DATA, interactive = FALSE)
+FIT <- ctmm.select(DATA, GUESS, trace = 3)
+save(FIT, file = "data/cilla.rda")
+
+```
+
+```{r ctmm.select2}
+
+# Load saved model selection results
+load("data/cilla.rda")
+
+```
+
+## Predicting from a Movement Model
+
+For now, let's just look at the first 10 hours of data (10 locations, 1 per hour).
+
+```{r predict}
+
+# Take the first 10 locations (first 10 hrs)
+SUB <- DATA[1:10,]
+
+# Plot subset
+plot(SUB, ylim = c(-26500,-21000))
+
+```
+
+Usually, if working with this little data, small sample size (absolute and effective sample sizes) is a concern for the analysis. You may want to consider using alternative information criteria (IC) to evaluate model performance for the model selection step. For small amounts of data, we recommend using leave-one-out cross-validation (`IC = "LOOCV"` in the `ctmm.select` function). Here, we are just subsetting for the purpose of visualization and to keep the module length to a minimum, so we will not be re-doing model selection with leave-one-out cross-validation.
+
+```{r predict2, eval = FALSE}
+
+# If working with this amount of data, you might consider alternative ICs
+## in particular IC = "LOOCV"
+help("ctmm.select")
+
+```
+
+Say we want to fill in the 1-hour gaps between sampled locations. We can predict where the animal was, by interpolating from the best-fit movement model for the data. We will predict a location for every 5 minutes over the same sampling interval (10 hours). Remember that the `t` column in our telemetry object is time in seconds, so we will need to use the conversion function (`%#%`) to convert 5 minutes to seconds.
+
+```{r predict3}
+
+# Convenient conversion function (help("%#%"))
+1 %#% 'hr'
+
+# Make an array of times over the same period, but 5 min apart
+SEQ <- seq(from = SUB$t[1], to = SUB$t[10], by = 5 %#% 'min')
+
+```
+
+> The `predict` function in `ctmm` can be used to predict animal locations over a prescribed set of times (as we have done above). The predictions are conditional on the given CTMM movement model. 
+
+We will use our best-fit model for Cilla (OUF anisotropic) to interpolate within our 10-hr subset of the data. This can help us reconstruct the potential path taken by Cilla during that sampling period, given the movement model and her data.
+
+```{r predict4, eval = FALSE}
+
+help('predict.ctmm')  # makes conditional predictions based on movement/location data
+
+```
+
+There are 3 options for supplying times for location predictions. The `dt` and `res` arguments both maintain the same sampling duration for the data (10 hours in this case), while interpolating; use `dt` to set the absolute (exact) time step to separate predictions, and use `res` to set an average number of locations to predict, where time steps will be relative to the data. The `t` argument allows you to provide a specific array of times over which to predict or simulate.
+
+```{r predict5}
+
+# Predict locations at those times
+PRED <- predict(SUB, FIT, t = SEQ)  # predict for every 5 mins
+## can allow smoothing for better location estimates 
+## (for when data points have greater or lesser uncertainty)
+
+# Plot predictions & data
+plot(list(PRED, SUB), col = c('blue','red'), ylim = c(-26500,-21000))
+## uncertainty ellipses
+
+```
+
+As seen in the plot of the predictions above, our actual data is plotted in <span style="color: red;">red</span>, while the predictions are shown as <span style="color: blue;">blue</span> ellipses. These are spaced 5 mins apart in time. The **size** of the ellipse represents *prediction uncertainty*. We are more certain about where an animal was when closer in time to the recorded data points, and we are the least certain (largest uncertainty ellipse) about the midpoint between two recorded locations, because the potential locations the individual could have occupied are the greatest at that point in time. The magnitude of our uncertainty in the prediction also depends on the time interval between recorded locations.
+
+```{r predict6}
+
+# Plot most-likely path
+plot(list(PRED, SUB), col = c('gray','red'), ylim = c(-26500,-21000))
+plot(PRED, error = FALSE, type = "l", col = "blue", add = TRUE)
+
+```
+
+> The **most-likely path (MLP)** taken by the individual, given the model, is the path that passes through the center of each error ellipse.
+
+The MLP for the first 10 hours of Aleja's movement is pictured in <span style="color: blue;">blue</span> above, passing through the center of each error ellipse (<span style="color: gray;">gray</span>).
+
+## Simulating Animal Movement
+
+A simulation represents one possible realization of events, given the model and model parameters used to generate it. Simulations are stochastic, so each simulation will be unique. We can either produce: 
+
+* **Conditional simulations**, that are informed by movement data and the continuous-time movement model fitted to that data, or,
+* **Generic simulations**, using a model we set ourselves that is not informed by real-world data.
+
+In this section, we will explore how each type of simulation can be used and walk through how we can use the `simulate` function in `ctmm` to perform both.
+
+### Conditional Simulations
+
+Simulations can be conditioned on a fitted movement model and tracking data (here, African buffalo data). Let's generate random simulations for the potential paths that Cilla could have taken. Note that when referring to random simulations, the term "random" does not mean completely random without structure; the simulated trajectory is generated with the known location points and given model parameters, such as position autocorrelation ($\tau_p$) and velocity autocorrelation ($\tau_v$).
+
+> There is some *variation in simulated trajectories* based on the data. This variance would match up with the error ellipses. If conditioned on location data, simulations will always pass through the known locations.
+
+```{r simulate, eval = FALSE}
+
+help('simulate.ctmm')  # simulate things freely or conditional on data
+
+```
+
+We will use the same 10-hr subset of Cilla's data to run multiple simulations to get trajectories based on a 1-minute sampling interval.
+
+```{r simulate2}
+
+# 1 minute sequence
+SEQ <- seq(from = SUB$t[1], to = SUB$t[10], by = 1 %#% 'min')
+
+# Simulate locations at those time (simulation 1)
+SIM <- simulate(SUB, FIT, t = SEQ)  # simulate path for every min
+
+# Plot conditional simulation & data
+plot(list(SIM, SUB), col = c('blue','red'), type = c('l','p'), 
+     ylim = c(-26500,-21000))
+
+# Simulate again (simulation 2)
+SIM2 <- simulate(SUB, FIT, t = SEQ)
+
+# Plot conditional simulation & data
+plot(list(SIM, SIM2, SUB), col = c('blue','orange','red'), type = c('l','l','p'), 
+     ylim = c(-26500,-21000))
+## some variation in simulated trajectories based on the data
+
+```
+
+The simulations above only include *trajectory uncertainty*. What if we also wan to include *parameter uncertainty* (variation in the model parameters)? We can use the `emulate` function in `ctmm` to simulate the movement model itself from the posterior estimate of a movement model. This assumes that the movement model in not known and we sample from the posterior to approximate the movement model (our `FIT` serves as a guide for sampling parameters).
+
+```{r emulate, eval = FALSE}
+
+# We can also include parameter uncertainty
+help('emulate')  # simulating movement model itself from posterior of estimate of movement model
+
+```
+
+```{r emulate2}
+
+# Include parameter uncertainty
+SIM3 <- simulate(SUB, emulate(FIT, fast = T), t = SEQ)  
+## emulate(FIT) for sample movement model to approximate unknown movement model
+
+plot(list(SIM, SIM2, SIM3, SUB), 
+     col = c('blue','orange','black','red'), type = c('l','l','l','p'), 
+     ylim = c(-26500,-21000))
+
+```
+
+### Generic Simulations
+
+Simulations can also be used to guide study design, by defining model parameters for species of interest. In this case, we do not have actual tracking data on which to condition a simulation. Instead, we supply potential parameters to specify a movement model for the movement behaviors that an animal might exhibit, and this becomes the basis for our simulations. 
+
+Let's try simulating from an OUF isotropic model (that we will name `MODEL`), where the position autocorrelation (home-range crossing time) is set to 1 day, the velocity autocorrelation (directional persistence time) is set to 1 minute, and we include a parameter for spatial variance (1 km$^2$) that relates to the 95% home range area. From this model, we can simulate animal locations and trajectories, given a sampling schedule.
+
+```{r simulate_gen}
+
+# Position autocorrelation timescale (range crossing time)
+tau_p <- 1 %#% 'day'
+
+# Velocity autocorrelation timescale (directional persistence)
+tau_v <- 1 %#% 'min'
+
+# Spatial variance
+## Note the same as the 95% HR area
+## 95% HR area = -2*log(0.05)*pi*sig
+sig <- 1 %#% 'kilometers^2'
+
+# Specify an OUF model for simulation
+MODEL <- ctmm(tau = c(tau_p, tau_v), isotropic = TRUE, sigma = sig)
+
+# Define the sampling duration/schedule
+t <- seq(0,1 %#% 'month', 1 %#% 'hr')  # 1-hour sampling over 1 month
+length(t)  # 709 location points to simulate
+
+# Simulate from the defined model and sampling schedule
+SIM <- simulate(MODEL, t = t)
+
+# Fit the movement models
+GUESS <- ctmm.guess(SIM, interactive = FALSE)
+FITS <- ctmm.select(SIM, GUESS, cores = -1)
+
+# Summary of the fit
+summary(FITS)  # NOTE the DOFs (DOF[speed] = 0)
+## We did not sample finely enough to capture the velocity autocorrelation timescale
+
+```
+
+Let's try a more fine-scale sampling schedule:
+
+```{r simulate_gen2}
+
+# Define the sampling duration/schedule
+t <- seq(0,4 %#% 'days', 5 %#% 'min')  # 5-minute sampling over 4 days
+length(t)  # 1153 locations points to simulate
+
+# Simulate from the defined model and sampling schedule
+SIM <- simulate(MODEL, t = t)
+
+# Fit the movement models
+GUESS <-  ctmm.guess(SIM, interactive = FALSE)
+
+```
+
+```{r simulate_gen3, eval = FALSE}
+
+FITS <- ctmm.select(SIM, GUESS)
+save(FITS, file = "data/generic_simulation.rda")
+
+```
+
+```{r simulate_gen4}
+
+load(file = "data/generic_simulation.rda")  # load saved model results
+
+# Summary of the fit (NOTE the DOFs)
+summary(FITS)
+
+# Home range estimate based on the simulated locations
+HR <- akde(SIM, FITS)
+
+# Visualize the results
+plot(SIM, UD = HR, main = "Simulation-Based Home-Range Estimate")
+
+```
+
+Note how we were able to estimate the velocity autocorrelation parameter with a finer sampling schedule.
+
+## Coati Case Study
+
+Let's explore how the techniques and functions above can be used to study the white-nosed coati (*Nasua narica*), a small, semi-arboreal mammal in the Musteloidea superfamily. [This dataset](https://doi.org/10.5441/001/1.41076dq1) from Kays and Hirsch (2015) comprises of 2 individual coatis, Aleja and Anna, who were tracked in Barro Colorado Island, Panama. [The behavior of musteloids often limits their observation in the wild](https://doi.org/10.1093/oso/9780198759805.003.0008), and if inhabiting forested areas, canopy cover can block the signal from tracking devices used to observe them remotely or greatly increase the location error. We will focus on Aleja to fill gaps in the data and predict the most-likely path they used.
+
+### Data preparation
+
+```{r coati}
+
+# Load in the dataset from ctmm
+data("coati")
+summary(coati)
+
+projection(coati) <- median(coati)
+
+# Subset to single individual
+DATA <- coati[[1]]
+
+# Visualize the data
+plot(DATA, ylim = c(-1200,1650))
+dt.plot(DATA)  # diagnose the sampling schedule
+## There are gaps in the data
+
+```
+
+### Model Selection
+
+```{r coati2}
+
+# Generate the variogram and initial parameter guesses
+vg <- variogram(DATA)
+GUESS <- ctmm.guess(DATA, variogram = vg, interactive = FALSE)
+
+# Visually inspect the fit
+plot(vg, GUESS)
+
+```
+
+```{r coati3, eval = FALSE}
+
+# Model selection
+FIT <- ctmm.select(data = DATA, CTMM = GUESS, trace = 3)
+save(FIT, file = "data/coati_aleja.rda")
+
+```
+
+```{r coati4}
+
+# Load saved model selection results
+load(file = "data/coati_aleja.rda")
+
+# Summary of the fit
+summary(FIT)  # OUF anisotropic model selected
+
+```
+
+### Simulating Paths
+
+Let's simulate based on the original sampling times to see a potential trajectory realization. We can generate many simulations to see multiple potential paths taken under the same movement behaviors and conditions. Here, we are interested in seeing Aleja's potential  space use and where we may observe her, purely based on her movement behaviors. As such, the 2 simulations we generate here are based on Aleja's best-fit model, but we do not input her known location points. 
+
+```{r coati5}
+
+# Simulate from the fitted model, with the original sampling times
+SIM <- simulate(FIT, t = DATA$t)
+
+# Visualize the results
+plot(list(DATA, SIM), col = c("red", "blue"))
+
+# Draw model parameters from the sampling distribution of the fitted model
+FIT2 <- emulate(FIT, fast = TRUE)
+
+# Simulate from the model
+SIM2 <- simulate(FIT2, t = DATA$t)
+
+# Visualize the results
+plot(list(DATA, SIM, SIM2), col = c("red", "blue", "green4"))
+
+```
+
+Now, if we wanted to fill in the gaps in her sampling data based on a potential trajectory, we could use a simulation that is informed both by her known location points and the movement model that describes her movement.
+
+```{r coati6}
+
+# Fill in the gaps 
+SIM3 <- simulate(DATA, CTMM = FIT, dt = 60)  # simulate for every 60 sec (1 min)
+
+# Visualize the results
+plot(list(DATA, SIM3), type = c("p", "l"), col = c("red", "blue"))
+
+```
+
+### Predict the Most-Likely Path
+
+We will predict Aleja's most-likely path by interpolating between our known locations, given her best-fit movement model.
+
+```{r coati7}
+
+# Generate the most likely path (conditioned on the fitted model)
+MLP <- predict(DATA, FIT, dt = 60)
+
+plot(DATA, ylim = c(-1200,1650))
+plot(MLP, error = FALSE, type = "l", col = "blue", add = TRUE)
+
+# Export the simulations to work with other packages
+SIM_EXPORT <- simulate(DATA, CTMM = FIT, complete = TRUE)
+
+EXPORT <- SpatialPoints.telemetry(SIM_EXPORT)  # we can export this to other formats
+
+class(EXPORT)  # `SpatialPoints` object for `sp` package
+
+# Different formats/object types allow us to work with our data in other packages
+mapview::mapView(EXPORT, alpha = 0.45)
+
+```
+
+<span style="color: gray;"> A combination of the true location data and locations generated from 1 simulation for Aleja. </span> <br>
+
+---
+
+## Key functions reference
+
+| Function | Package | Purpose | 
+|:---|:---|:---|
+| `predict.ctmm()` or `predict()` | `ctmm` | Predict animal locations from a continuous-time movement model | 
+| `simulate()` | `ctmm` | Simulate animal locations and tracks from a continuous-time movement model (and conditioned on data, if provided) |
+| `emulate()` | `ctmm` | Generate random model-fit statistics from the sampling distribution of a continuous-time movement model and given sampling schedule |
+
+---
+
+_Next: **Accounting for Location Error** — We will account for issues with remotely-sensed data, such as GPS location error, which may result in outliers and bias our analyses._
+
