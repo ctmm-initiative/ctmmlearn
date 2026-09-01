@@ -14,3 +14,4 @@ To download, click the green "Code" button and then click "Download ZIP".
 | html | Contains knitted HTML files for all vignettes available |
 | vignettes | Contains Markdown (.Rmd) files for all vignettes available |
 | scripts | Contains working scripts for all vignettes available, earlier versions of learning materials, and scripts without corresponding vignettes |
+| data | Example datasets and outputs used in the learning materials |
