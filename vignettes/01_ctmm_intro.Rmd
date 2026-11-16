@@ -643,7 +643,7 @@ plot(ACF2, frac = 0.02, main = 'ACF of "OUF" Residuals (zoom)')
 ``` {r ctmm.select_OUF6}
 
 # Why is this model fit deflected down?
-plot(SVF, FITS$`OU anisotropic`, main = 'ACF of "OU" Residuals') 
+plot(SVF, FITS$`OU anisotropic`, main = "OU Variogram") 
 
 ```
 

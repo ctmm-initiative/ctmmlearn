@@ -351,7 +351,7 @@ ctmm.guess(DATA, variogram = SVF)
 ## - ideally need one stationary model per behaviour (movement behaviour)
 
 # Why is this model fit deflected down?
-plot(SVF, FITS$`OU anisotropic`, main = 'ACF of "OU" Residuals') 
+plot(SVF, FITS$`OU anisotropic`, main = "OU Variogram") 
 ## This model doesn't fit well at all, wrong type of autocorrelation model
 ## Brownian motion for short periods of time under OU model,
 ## but buffalo has persistence of motion (empirical variogram has initial quadratic shape)
